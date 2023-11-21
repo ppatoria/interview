@@ -185,14 +185,14 @@ In this scenario, if both threads execute concurrently.
 It can result in the
 (1) `sharedPtr` being reset to different memory locations, leading to potential memory leaks.
 or
-(2) accessing invalid memory due to data races, which is undefined behavior in C++.
+(2) accessing invalid memory due to data races, which is an undefined behaviour in C++.
 
 ## Solution
 To fix this, you would need to protect the assignments with a mutex or other synchronization primitive.
 
 # Accessing a destroyed object while other threads still hold references:
 If a `std::shared_ptr` is accessed by multiple threads concurrently, and one thread destroys the object while others are still holding references to it.
-It can result in accessing a destroyed object, leading to undefined behavior.
+It can result in accessing a destroyed object, leading to undefined behaviour.
 
 ## Example:
 ```cpp
@@ -205,12 +205,12 @@ It can result in accessing a destroyed object, leading to undefined behavior.
    // Thread 2
    int value = *sharedPtr; // Accessing a destroyed object
 ```
-## Undefined behavior:
-In this case, if Thread 2 tries to access the object pointed to by `sharedPtr` after it has been reset by Thread 1, it will result in undefined behavior.
+## Undefined behaviour:
+In this case, if Thread 2 tries to access the object pointed to by `sharedPtr` after it has been reset by Thread 1, it will result in undefined behaviour.
 
 ## Solution:
 To prevent this issue, you need to ensure proper synchronization and lifetime management.
-One approach is to use additional synchronization mechanism, such as mutexes or condition variables.
+One approach is to use additional synchronization mechanisms, such as mutexes or condition variables.
 Coordinate the destruction of the shared object among threads to ensure that no thread is accessing a destroyed object.
 
 
@@ -360,11 +360,11 @@ int main()
     Since B no longer exists, the output will be "B no longer exists".
 
     This example demonstrates how std::weak_ptr can be used to break a circular reference and handle scenarios where objects may have been deleted.
-    It allows you to safely access the object through the weak pointer without causing undefined behavior.
+    It allows you to safely access the object through the weak pointer without causing undefined behaviour.
 
 # Incorrect usage with raw pointers:
     If you mix `std::shared_ptr` with raw pointers and accidentally delete the object managed by the shared pointer;
-    It can result in a use-after-free error or undefined behavior.
+    It can result in a use-after-free error or undefined behaviour.
 
 ## Example:
    ```cpp
@@ -376,7 +376,7 @@ int main()
 
    delete rawPtr; // Incorrectly deleting the object
 
-   // Accessing sharedPtr now results in undefined behavior
+   // Accessing sharedPtr now results in undefined behaviour
    ```
 
 To avoid this, always use `std::shared_ptr` consistently and avoid manually deleting the objects managed by shared pointers.
@@ -424,7 +424,7 @@ To avoid this, always use `std::shared_ptr` consistently and avoid manually dele
 
 # Misuse of custom deleters:
     ``std::shared_ptr` allows you to provide custom deleters to handle the destruction of the managed object.
-    If the custom deleter is not implemented correctly or misused, it can result in memory leaks, double deletions, or other undefined behavior.
+    If the custom deleter is not implemented correctly or misused, it can result in memory leaks, double deletions, or other undefined behaviour.
     Ensure that custom deleters are implemented properly and handle the destruction of the object correctly.
 ## Example:
     Suppose we have a `Trade` class that represents a trade executed in the trading platform.
@@ -503,7 +503,7 @@ tradeData_(new TradeData(symbol, price),
 ```
 
 ### Undefined Behavior:
-    If a custom deleter is misused or incorrectly implemented, it can result in other forms of undefined behavior.
+    If a custom deleter is misused or incorrectly implemented, it can result in other forms of undefined behaviour.
     For example, consider a scenario where the custom deleter tries to access a member variable of the `Trade` class:
 
 ```cpp
@@ -569,7 +569,7 @@ public:
     If an exception occurs, the object may not be properly deallocated, leading to a memory leak.
 
 ### Solution: (std::make_shared)
-    using `std::make_shared` guarantees deallocaton of memory if exception occurs during construction of the object.
+    using `std::make_shared` guarantees the deallocation of memory if an exception occurs during the construction of the object.
 
 #### Example:
 ```cpp
@@ -619,7 +619,7 @@ MyClass constructor
 Exception caught: Exception during construction
 ```
 
-    As you can see, if the constructor of the object being created with `std::make_shared` throws an exception, 
+    As you can see if the constructor of the object being created with `std::make_shared` throws an exception, 
     the exception is caught in the `try-catch` block surrounding the `std::make_shared` call. 
     This allows you to handle the exception appropriately and prevent it from propagating further.
 
@@ -627,8 +627,8 @@ Exception caught: Exception during construction
     This ensures proper cleanup and prevents resource leaks.
 
 ## Issue when `new` throws an exception:
-### Result will be same for `new` or `std::make_shared` the exception will propagate out.
-    When `new` throws an exception during the memory allocation phase, the behavior of `std::make_shared` depends on the implementation. 
+### Result will be the same for `new` or `std::make_shared` the exception will propagate out.
+    When `new` throws an exception during the memory allocation phase, the behaviour of `std::make_shared` depends on the implementation. 
     In most implementations, `std::make_shared` internally uses `new` to allocate memory for both the object and the control block. 
     If `new` throws an exception during this allocation, `std::make_shared` will not have a chance to create the control block and construct the object. 
 
@@ -895,14 +895,14 @@ int main()
     The output of the above example would be:
 
     ```
-    Custom allocation for 1 objects
+    Custom allocation for 1 object
     ```
 
     As you can see, the custom allocator is used to allocate memory for the object.
     It allows to customize the memory allocation strategy for the object portion of the std::shared_ptr by providing a custom allocator.
 # Deleters.
 
-    Deleters in `std::shared_ptr` provide a way to customize the cleanup behavior when the reference count of the `std::shared_ptr` reaches zero. 
+    Deleters in `std::shared_ptr` provide a way to customize the cleanup behaviour when the reference count of the `std::shared_ptr` reaches zero. 
     They are used to specify how the resources managed by the `std::shared_ptr` should be released.
 
     One common use case for custom deleters is when you need to release resources that are not managed by the default destructor of the object. 
@@ -959,7 +959,7 @@ int main()
     This allows you to perform any necessary cleanup, such as closing a file or releasing other resources.
 
     In summary, custom allocators and deleters provide additional customization and flexibility when working with `std::shared_ptr`. 
-    Allocators allow you to customize the memory allocation strategy, while deleters allow you to specify custom cleanup behavior. 
+    Allocators allow you to customize the memory allocation strategy, while deleters allow you to specify custom cleanup behaviour. 
     They are useful in scenarios where you have specific memory or resource management requirements that cannot be accomplished with the default constructor or destructor.
 
 
@@ -990,7 +990,7 @@ are two different ways to create a `std::shared_ptr` object with a custom alloca
      which may result in slightly less efficient memory utilization compared to `std::allocate_shared`.
    - It provides more flexibility as you can use different allocation strategies or perform any additional setup before constructing the object.
 
-    Here's an example of using `std::shared_ptr` constructor with a custom allocator:
+    Here's an example of using the `std::shared_ptr` constructor with a custom allocator:
 
     ```cpp
    std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator);
