@@ -900,6 +900,48 @@ int main()
 
     As you can see, the custom allocator is used to allocate memory for the object.
     It allows to customize the memory allocation strategy for the object portion of the std::shared_ptr by providing a custom allocator.
+
+# std::allocate_shared.
+`std::allocate_shared<Trade>(tradeAllocator)` and `std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator)`
+are two different ways to create a `std::shared_ptr` object with a custom allocator.
+
+## `std::allocate_shared<Trade>(tradeAllocator)`:
+   - This function template is provided by the C++ Standard Library and is specifically designed for creating a `std::shared_ptr` object with a custom allocator.
+   - It allocates memory for the object using the specified allocator and constructs the object in that memory.
+   - It combines the allocation and construction in a single step,
+     resulting in potentially better performance and memory utilization compared to separate allocation and construction.
+   - It requires the allocator to provide a `std::allocator_traits`-compatible allocator that supports the appropriate allocation and deallocation operations.
+
+## Example of using `std::allocate_shared`:
+
+    ```cpp
+    SharedTradePtr trade = std::allocate_shared<Trade>(tradeAllocator);
+    ```
+
+## `std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator)`:
+   - This is a traditional way to create a `std::shared_ptr` object with a custom allocator,
+     using the constructor of `std::shared_ptr` that takes a pointer and an allocator as arguments.
+   - It involves manually allocating memory for the object using the specified allocator
+     and then constructing the object in that memory using placement new.
+   - It separates the allocation and construction steps,
+     which may result in slightly less efficient memory utilization compared to `std::allocate_shared`.
+   - It provides more flexibility as you can use different allocation strategies or perform any additional setup before constructing the object.
+
+    Here's an example of using the `std::shared_ptr` constructor with a custom allocator:
+
+    ```cpp
+   std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator);
+   ```
+
+    In this example, we create a `std::shared_ptr` object named `ptr` by manually allocating memory using the `tradeAllocator` and
+    constructing a `Trade` object in that memory using placement new.
+    The `ptr` object takes ownership of the allocated memory and will handle the deallocation when it goes out of scope.
+
+    To summarize, `std::allocate_shared` is the recommended approach when you want to create a `std::shared_ptr` with a custom allocator directly
+    and benefit from the combined allocation and construction.
+    However, using the constructor of `std::shared_ptr` with a custom allocator gives you more flexibility
+    if you need to perform additional steps during the allocation or construction process.
+
 # Deleters.
 
     Deleters in `std::shared_ptr` provide a way to customize the cleanup behaviour when the reference count of the `std::shared_ptr` reaches zero. 
@@ -909,7 +951,7 @@ int main()
     For example, if you have a resource that needs to be explicitly released, such as a file handle or a network connection, 
     you can provide a custom deleter to ensure proper cleanup.
 
-    Here's an example to illustrate the usage of custom deleters with `std::shared_ptr`:
+## Example:
 
 ```cpp
 #include <iostream>
@@ -958,49 +1000,8 @@ int main()
     As you can see, the custom deleter is called when the `std::shared_ptr` goes out of scope and the reference count reaches zero. 
     This allows you to perform any necessary cleanup, such as closing a file or releasing other resources.
 
-    In summary, custom allocators and deleters provide additional customization and flexibility when working with `std::shared_ptr`. 
+## Summary:
+    Custom allocators and deleters provide additional customization and flexibility when working with `std::shared_ptr`. 
     Allocators allow you to customize the memory allocation strategy, while deleters allow you to specify custom cleanup behaviour. 
     They are useful in scenarios where you have specific memory or resource management requirements that cannot be accomplished with the default constructor or destructor.
 
-
-
-# Different ways to provide custom allocators.
-`std::allocate_shared<Trade>(tradeAllocator)` and `std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator)`
-are two different ways to create a `std::shared_ptr` object with a custom allocator.
-
-## `std::allocate_shared<Trade>(tradeAllocator)`:
-   - This function template is provided by the C++ Standard Library and is specifically designed for creating a `std::shared_ptr` object with a custom allocator.
-   - It allocates memory for the object using the specified allocator and constructs the object in that memory.
-   - It combines the allocation and construction in a single step,
-     resulting in potentially better performance and memory utilization compared to separate allocation and construction.
-   - It requires the allocator to provide a `std::allocator_traits`-compatible allocator that supports the appropriate allocation and deallocation operations.
-
-## Example of using `std::allocate_shared`:
-
-    ```cpp
-    SharedTradePtr trade = std::allocate_shared<Trade>(tradeAllocator);
-    ```
-
-## `std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator)`:
-   - This is a traditional way to create a `std::shared_ptr` object with a custom allocator,
-     using the constructor of `std::shared_ptr` that takes a pointer and an allocator as arguments.
-   - It involves manually allocating memory for the object using the specified allocator
-     and then constructing the object in that memory using placement new.
-   - It separates the allocation and construction steps,
-     which may result in slightly less efficient memory utilization compared to `std::allocate_shared`.
-   - It provides more flexibility as you can use different allocation strategies or perform any additional setup before constructing the object.
-
-    Here's an example of using the `std::shared_ptr` constructor with a custom allocator:
-
-    ```cpp
-   std::shared_ptr<Trade> ptr(new Trade(), tradeAllocator);
-   ```
-
-    In this example, we create a `std::shared_ptr` object named `ptr` by manually allocating memory using the `tradeAllocator` and
-    constructing a `Trade` object in that memory using placement new.
-    The `ptr` object takes ownership of the allocated memory and will handle the deallocation when it goes out of scope.
-
-    To summarize, `std::allocate_shared` is the recommended approach when you want to create a `std::shared_ptr` with a custom allocator directly
-    and benefit from the combined allocation and construction.
-    However, using the constructor of `std::shared_ptr` with a custom allocator gives you more flexibility
-    if you need to perform additional steps during the allocation or construction process.
