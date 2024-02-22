@@ -25,37 +25,69 @@
     deallocation of trade objects using a `std::shared_ptr` allocator:
 
     ```cpp
-    #include <memory>
+#include <iostream>
+#include <memory>
 
-    class Trade {
-        // Trade data and member functions
-    };
+// Custom allocator
+template <class T>
+struct MyAllocator {
+    using value_type = T;
 
-    using TradeAllocator = std::allocator<Trade>;
-    using SharedTradePtr = std::shared_ptr<Trade>;
+    MyAllocator() noexcept = default;
 
-    int main() {
-        TradeAllocator tradeAllocator;
+    template <class U>
+    MyAllocator(const MyAllocator<U>&) noexcept {}
 
-        // Allocate trade objects dynamically based on conditions
-        SharedTradePtr trade1 = std::allocate_shared<Trade>(tradeAllocator);
-        SharedTradePtr trade2 = std::allocate_shared<Trade>(tradeAllocator);
-
-        // Use the allocated trade objects
-
-        // Deallocate trade objects when no longer needed
-        trade1.reset();
-        trade2.reset();
-
-        return 0;
+    T* allocate(std::size_t n) {
+        std::cout << "Custom allocation of " << n << " objects\n";
+        return static_cast<T*>(::operator new(n * sizeof(T)));
     }
+
+    void deallocate(T* p, std::size_t n) noexcept {
+        std::cout << "Custom deallocation of " << n << " objects\n";
+        ::operator delete(p);
+    }
+};
+
+int main() {
+    // Using std::allocate
+    {
+        std::allocator<int> alloc;
+        int* ptr = alloc.allocate(5);  // Allocating memory for 5 ints
+        alloc.deallocate(ptr, 5);      // Deallocating the memory
+    }
+
+    std::cout << "-----------------\n";
+
+    // Using custom allocator
+    {
+        MyAllocator<int> alloc;
+        int* ptr = alloc.allocate(5);  // Allocating memory for 5 ints using custom allocator
+        alloc.deallocate(ptr, 5);      // Deallocating the memory using custom allocator
+    }
+
+    std::cout << "-----------------\n";
+
+    // Using std::allocate_shared
+    {
+        std::allocator<int> alloc;
+        auto ptr = std::allocate_shared<int>(alloc, 42);  // Allocating and constructing an int using std::allocate_shared
+        std::cout << *ptr << '\n';                        // Accessing the value
+    }
+
+    std::cout << "-----------------\n";
+
+    // Using custom allocator with std::allocate_shared
+    {
+        MyAllocator<int> alloc;
+        auto ptr = std::allocate_shared<int>(alloc, 42);  // Allocating and constructing an int using custom allocator with std::allocate_shared
+        std::cout << *ptr << '\n';                        // Accessing the value
+    }
+
+    return 0;
+}
     ```
 
-    In this example, we use the `std::allocate_shared` function to allocate the
-    trade objects using the `TradeAllocator`.
-    This allows us to dynamically create trade objects based on certain conditions, and
-    the `std::shared_ptr` manages the deallocation automatically when the shared
-    pointers go out of scope or are reset.
 
 2. **Specific memory alignment requirements**: In a trading application, you may
 have specific memory alignment requirements, especially when dealing with
