@@ -1,4 +1,4 @@
-# virtual over generic
+# Virtual over Generic
 
 ## Question: Which of the following are common reasons to prefer virtual dispatch over templates:
 Pick ONE OR MORE options.  
