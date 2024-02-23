@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>bike_ride_hydration_problem.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<h1 id="bike-ride-hydration-problem">Bike ride hydration problem</h1>
+<p>A cyclist rides a bike on a long, straight bicycle path. He has one water bottle- initially full. With a full bottle, he can ride at most “range” kilometres before passing out from dehydration. Please implement the C++20 function…</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="dt">int</span> min_refills(<span class="dt">int</span> start_pos, <span class="dt">int</span> finish_pos, <span class="dt">int</span> range, <span class="at">const</span> <span class="bu">std::</span>vector&lt;<span class="dt">int</span>&gt;&amp; tap_positions)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>...</span></code></pre></div>
+<p>such that it efficiently (in a big-O sense) calculates and returns the minimum number of times he’d need to refill his water bottle when riding from the “start” kilometre mark to the “finish” kilometre mark. The kilometre positions of each tap where he can refill his bottle are provided in the “taps” argument. If it’s not possible to reach the intended finish mark, min_refills should return -1. * <strong>For example</strong>, a call to…</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>min_refills(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">4</span>, {<span class="dv">13</span>, <span class="dv">17</span>, <span class="dv">18</span>, <span class="dv">22</span>, <span class="dv">7</span> <span class="dv">30</span>})</span></code></pre></div>
+<p>models a desire to ride from the 10km mark and reach the 20km mark, an ability to ride 4 kms between refills, and taps at each of the 13, 17, 18, 22, and 30 kilometre marks. Starting at the 10km mark, after refilling twice - at the 13km and 17km marks - he’ll have enough water to reach his finish point at the 20km mark, so min_refills should return 2.</p>
+<ul>
+<li><strong>Another examples:</strong> min_refills(10, 25, 5, {13, 17, 18, 21, 22, 30}) should refill at 13, 17 or 18, 21 or 22kms =&gt; result 3. NOTES</li>
+<li>all kilometre marks - start_pos, finish_pos and tap_positions (if any) - are in the range [0..1,000,000] inclusive - start &lt;= finish, and tap_positions are distinct values in increasing order - range is in the range [1..1,000,000] km . Please implement the below min_refills function in c++20 and it should be as efficient at it could be.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;bits/stdc++.h&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="kw">using</span> <span class="kw">namespace</span> std;</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="dt">int</span> min_refills(<span class="dt">int</span> start_pos, <span class="dt">int</span> finish_pos, <span class="dt">int</span> range, <span class="at">const</span> vector&lt;<span class="dt">int</span>&gt;&amp; tap_positions) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>    <span class="co">// please implement this function...</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="dt">int</span> main()</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>{</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>    <span class="dt">int</span> start_pos, finish_pos, range;</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>    <span class="bu">std::</span>vector&lt;<span class="dt">int</span>&gt; tap_positions;</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>    <span class="ot">assert</span>(cin &gt;&gt; start_pos &gt;&gt; finish_pos &gt;&gt; range);</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>    <span class="dt">int</span> temp;</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>    <span class="cf">while</span> (cin &gt;&gt; temp) tap_positions.push_back(temp);</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>    <span class="ot">assert</span>(cin.eof());</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>    <span class="dt">int</span> result = min_refills(start_pos, finish_pos, range, tap_positions);</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>    <span class="cf">if</span> (<span class="bu">std::</span>ofstream fout{getenv(<span class="st">&quot;OUTPUT_PATH&quot;</span>)})</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a>        fout &lt;&lt; result &lt;&lt; <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>;</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a>    <span class="cf">else</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a>        <span class="cf">return</span> EXIT_FAILURE;</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a>}</span></code></pre></div>
+<h2 id="solution">Solution:</h2>
+<h3 id="problem-explanation">Problem Explanation:</h3>
+<p>The problem is about a cyclist who is riding on a long, straight bicycle path. The cyclist has a water bottle that, when full, allows him to ride a certain distance before he needs to refill it. The distance he can ride with a full bottle is given by the variable <code>range</code>.</p>
+<p>The cyclist starts at a certain position on the path (<code>start_pos</code>) and wants to reach another position (<code>finish_pos</code>). Along the path, there are several taps where he can refill his water bottle. The positions of these taps are given in the <code>tap_positions</code> vector.</p>
+<p>The goal is to find the minimum number of times the cyclist needs to refill his water bottle in order to reach his destination. If it’s not possible for him to reach his destination (because the taps are too far apart), the function should return -1.</p>
+<p>Here’s a simple example to illustrate the problem:</p>
+<p>Let’s say the cyclist starts at position 10 (<code>start_pos = 10</code>), wants to reach position 20 (<code>finish_pos = 20</code>), and can ride 4 km with a full bottle (<code>range = 4</code>). There are taps at positions 13, 17, 18, 22, and 30 (<code>tap_positions = {13, 17, 18, 22, 30}</code>).</p>
+<p>The cyclist starts at position 10 with a full bottle. He can ride 4 km before needing to refill, so he can reach position 14. The nearest tap is at position 13, so he stops there and refills his bottle.</p>
+<p>Now, with a full bottle, he can ride another 4 km, which takes him to position 17. There’s a tap at this position, so he refills his bottle again.</p>
+<p>With another full bottle, he can ride 4 km to position 21. However, his destination is at position 20, so he can stop there without needing to refill his bottle again.</p>
+<p>So, in total, the cyclist needed to refill his bottle 2 times to reach his destination. Therefore, the function <code>min_refills(10, 20, 4, {13, 17, 18, 22, 30})</code> should return 2. ### Algorithm: 1. <strong>Initialization</strong>: - Start by initializing a variable, say <code>current_pos</code>, to <code>start_pos</code>. This variable will keep track of the current position of the cyclist. - Also, initialize a variable, say <code>refills</code>, to 0. This variable will keep track of the number of refills.</p>
+<ol start="2" type="1">
+<li><p><strong>Traversal</strong>: Traverse through the <code>tap_positions</code> vector. For each tap position, check if the cyclist can reach it from <code>current_pos</code> with the water he currently has (i.e., if the difference between the tap position and <code>current_pos</code> is less than or equal to <code>range</code>). If he can, continue to the next tap position. If he can’t, it means he needs to refill at the previous tap position. In this case, increment <code>refills</code> by 1 and update <code>current_pos</code> to the previous tap position.</p></li>
+<li><p><strong>Final Check</strong>: After the traversal, check if the cyclist can reach <code>finish_pos</code> from <code>current_pos</code> with the water he currently has.</p></li>
+</ol>
+<ul>
+<li>If he can, return <code>refills</code> as the minimum number of refills needed.</li>
+<li>If he can’t, it means he needs to refill at the last tap position. In this case, increment <code>refills</code> by 1 and return it.</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>No Solution</strong>: If at any point during the traversal or the final check, the cyclist needs to refill but there’s no tap position to do so, return -1 to indicate that it’s not possible to reach the finish position.</li>
+</ol>
+<p>This algorithm traverses the <code>tap_positions</code> vector only once, so its time complexity is O(n), where n is the number of tap positions. It also uses a constant amount of space, so its space complexity is O(1). #### Test Algorithm: Let’s walk through the algorithm with the first example you provided:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>min_refills(<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">4</span>, {<span class="dv">13</span>, <span class="dv">17</span>, <span class="dv">18</span>, <span class="dv">22</span>, <span class="dv">7</span>, <span class="dv">30</span>})</span></code></pre></div>
+<p>Here, the cyclist starts at the 10km mark and wants to reach the 20km mark. He can ride 4 kms between refills, and there are taps at the 13, 17, 18, 22, and 30 kilometre marks.</p>
+<p><strong>Step 1 - Initialization</strong>: - <code>current_pos</code> = 10 (start_pos) - <code>refills</code> = 0</p>
+<p><strong>Step 2 - Traversal</strong>: - The first tap position is 13. The cyclist can reach it from <code>current_pos</code> (10) because 13 - 10 = 3, which is less than <code>range</code> (4). - continue to the next tap position. - The next tap position is 17. The cyclist can’t reach it from <code>current_pos</code> (10) because 17 - 10 = 7, which is greater than <code>range</code> (4). So, he needs to refill at the previous tap position (13). - increment <code>refills</code> by 1 and - update <code>current_pos</code> to 13. - The next tap position is 18. The cyclist cannot reach it from current_pos (13) because 18 - 13 = 5, which is greater than range (4). So, he needs to refill at the previous tap position (17). - increment refills by 1 and - update current_pos to 17. - The next tap positions are 22 and 30, but they’re beyond the finish position, so we ignore them.</p>
+<p><strong>Step 3 - Final Check</strong>: - After the traversal, we check if the cyclist can reach <code>finish_pos</code> (20) from <code>current_pos</code> (17). He can because 20 - 17 = 3, which is less than <code>range</code> (4). - return <code>refills</code> (2) as the minimum number of refills needed.</p>
+<p>So, <code>min_refills(10, 20, 4, {13, 17, 18, 22, 7, 30})</code> returns 2, which means the cyclist needs to refill once to reach the 20km mark from the 10km mark.</p>
+<h3 id="implementation">Implementation:</h3>
+<p>The idea is to keep track of the last refill position and continuously look ahead in the tap_positions to the farthest tap that can be reached. If a tap cannot be reached, return -1.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;bits/stdc++.h&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">using</span> <span class="kw">namespace</span> std;</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="dt">int</span> min_refills(<span class="dt">int</span> start_pos, <span class="dt">int</span> finish_pos, <span class="dt">int</span> range, <span class="at">const</span> vector&lt;<span class="dt">int</span>&gt;&amp; tap_positions) {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>    <span class="dt">int</span> n              = tap_positions.size();</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>    <span class="dt">int</span> num_refills    = <span class="dv">0</span>;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>    <span class="dt">int</span> current_refill = <span class="dv">0</span>;</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>    <span class="dt">int</span> current_pos    = start_pos;</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>    <span class="cf">while</span> (current_pos + range &lt; finish_pos) {</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>    <span class="co">/** While condition (current_pos + range &lt; finish_pos) checks if the cyclist can reach the finish line with the water he currently has.</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="co">        If he can’t (current_pos + range is less than finish_pos)</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">            the loop continues, and the cyclist needs to find a tap to refill his water bottle.</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="co">        If he can (current_pos + range is greater than or equal to finish_pos)</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="co">            the loop ends, and the function returns the number of refills the cyclist needed to reach the finish line.</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a><span class="co">    */</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>        <span class="cf">if</span> (current_refill &gt;= n || tap_positions[current_refill] &gt; current_pos + range)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>        { <span class="cf">return</span> -<span class="dv">1</span>; }</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>        <span class="co">/** The condition `if (current_refill &gt;= n || tap_positions[current_refill] &gt; current_pos + range)` is a safety check that happens at the start of each loop iteration. It checks two things:</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a><span class="co">            1. `current_refill &gt;= n`: This checks if the cyclist has already considered all the tap positions.</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a><span class="co">               If `current_refill` is equal to or greater than `n` (the total number of tap positions), it means there are no more taps to consider.</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a><span class="co">                   In this case, the cyclist cannot reach the next refill station and the function returns -1.</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="co">            2. `tap_positions[current_refill] &gt; current_pos + range`: This checks if the next tap position is within reach from the cyclist&#39;s current position.</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a><span class="co">               If the next tap (`tap_positions[current_refill]`) is further than what the cyclist can reach with his current water supply (`current_pos + range`), it means the cyclist cannot reach the next refill station and the function returns -1.</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a><span class="co">            This condition is checking if it&#39;s possible for the cyclist to continue.</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a><span class="co">            If it&#39;s not (because there are no more taps or the next tap is out of reach)</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a><span class="co">                the function returns -1 to indicate that it&#39;s not possible to reach the finish position.</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a><span class="co">        */</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true"></a>        <span class="cf">while</span> (current_refill &lt; n-<span class="dv">1</span> &amp;&amp; tap_positions[current_refill+<span class="dv">1</span>] &lt;= current_pos + range)</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true"></a>        { current_refill++; }</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true"></a>        <span class="co">/** The condition `while (current_refill &lt; n-1 &amp;&amp; tap_positions[current_refill+1] &lt;= current_pos + range)` is inside the main loop of the function.</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true"></a><span class="co">            It&#39;s used to find the furthest tap position that the cyclist can reach from his current position with the water he currently has.</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true"></a><span class="co">            Here&#39;s what each part means:</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true"></a><span class="co">              - `current_refill &lt; n-1`:</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true"></a><span class="co">                  This checks if there are more tap positions to consider.</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true"></a><span class="co">                  If `current_refill` is equal to or greater than `n-1` (the total number of tap positions minus 1), it means there are no more taps to consider.</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true"></a><span class="co">              - `tap_positions[current_refill+1] &lt;= current_pos + range`:</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true"></a><span class="co">                  This checks if the next tap position is within reach from the cyclist&#39;s current position.</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true"></a><span class="co">                      If the next tap (`tap_positions[current_refill+1]`) is less than or equal to the furthest position the cyclist can reach with his current water supply (`current_pos + range`), it means the cyclist can reach the next tap.</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true"></a></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true"></a><span class="co">            This inner while loop continues as long as there are more taps to consider and the next tap is within reach.</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true"></a><span class="co">            During each iteration of the loop, `current_refill` is incremented, effectively moving to the next tap position.</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true"></a><span class="co">            This way, the loop always finds the furthest tap position that the cyclist can reach, which helps minimize the number of refills.</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true"></a><span class="co">        */</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true"></a>        current_pos = tap_positions[current_refill];</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true"></a>        num_refills++;</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true"></a>        current_refill++;</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true"></a>    }</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true"></a>    <span class="cf">return</span> num_refills;</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true"></a>}</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true"></a></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true"></a><span class="dt">int</span> main() {</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true"></a>    <span class="dt">int</span> start_pos, finish_pos, range;</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true"></a>    <span class="bu">std::</span>vector&lt;<span class="dt">int</span>&gt; tap_positions;</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true"></a></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true"></a>    <span class="ot">assert</span>(cin &gt;&gt; start_pos &gt;&gt; finish_pos &gt;&gt; range);</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true"></a>    <span class="dt">int</span> temp;</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true"></a>    <span class="cf">while</span> (cin &gt;&gt; temp) tap_positions.push_back(temp);</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true"></a>    <span class="ot">assert</span>(cin.eof());</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true"></a></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true"></a>    <span class="dt">int</span> result = min_refills(start_pos, finish_pos, range, tap_positions);</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true"></a></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true"></a>    <span class="cf">if</span> (<span class="bu">std::</span>ofstream fout{getenv(<span class="st">&quot;OUTPUT_PATH&quot;</span>)})</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true"></a>        fout &lt;&lt; result &lt;&lt; <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>;</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true"></a>    <span class="cf">else</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true"></a>        <span class="cf">return</span> EXIT_FAILURE;</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true"></a>}</span></code></pre></div>
+<p>This function iterates through the tap_positions vector only once, so it runs in O(n) time, where n is the number of tap positions. This is as efficient as it cold be for this problem. #### Test Implementation: Let’s walk through the function with the example <code>min_refills(10, 20, 4, {13, 17, 18, 22, 7, 30})</code>.</p>
+<p>Here, the cyclist starts at the 10km mark and wants to reach the 20km mark. He can ride 4 kms between refills, and there are taps at the 13, 17, 18, 22, 7, and 30 kilometre marks.</p>
+<p><strong>Step 1 - Initialization</strong>: - <code>current_pos</code> = 10 (start_pos) - <code>num_refills</code> = 0 - <code>current_refill</code> = 0</p>
+<p><strong>Step 2 - Main Loop</strong>: - The condition for the while loop is <code>current_pos + range &lt; finish_pos</code>, which is <code>10 + 4 &lt; 20</code>, so we enter the loop. - The first if condition checks if <code>current_refill &gt;= n</code> or <code>tap_positions[current_refill] &gt; current_pos + range</code>. Since <code>current_refill</code> is 0 and <code>tap_positions[0]</code> is 13, which is not greater than <code>current_pos + range</code> (14), we don’t enter the if block. - We then enter the inner while loop, which continues as long as <code>current_refill &lt; n-1</code> and <code>tap_positions[current_refill+1] &lt;= current_pos + range</code>. Since <code>tap_positions[1]</code> (17) is not less than or equal to <code>current_pos + range</code> (14), we don’t enter the inner while loop. - We then update <code>current_pos</code> to <code>tap_positions[current_refill]</code> (13) and increment <code>num_refills</code> and <code>current_refill</code> by 1.</p>
+<p><strong>Step 3 - Next Iteration</strong>: - We again check the condition for the while loop, which is now <code>13 + 4 &lt; 20</code>, so we enter the loop. - The first if condition is again false because <code>tap_positions[1]</code> (17) is not greater than <code>current_pos + range</code> (17). - We then enter the inner while loop. Since <code>tap_positions[2]</code> (18) is greater than <code>current_pos + range</code> (17), we don’t enter the inner while loop. - We then update <code>current_pos</code> to <code>tap_positions[current_refill]</code> (17) and increment <code>num_refills</code> and <code>current_refill</code> by 1.</p>
+<p><strong>Step 4 - Final Check</strong>: - We again check the condition for the while loop, which is now <code>17 + 4 &lt; 20</code>, so we don’t enter the loop. - We then return <code>num_refills</code> (2) as the minimum number of refills needed.</p>
+<p>So, <code>min_refills(10, 20, 4, {13, 17, 18, 22, 7, 30})</code> returns 2, which means the cyclist needs to refill twice to reach the 20km mark from the 10km mark.</p>
+<p>I hope this helps you understand the function better! If you have any more questions, feel free to ask. 😊</p>
+
+</body>
+</html>

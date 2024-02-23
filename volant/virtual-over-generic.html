@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>virtual-over-generic.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<h1 id="virtual-over-generic">virtual over generic</h1>
+<h2 id="question-which-of-the-following-are-common-reasons-to-prefer-virtual-dispatch-over-templates">Question: Which of the following are common reasons to prefer virtual dispatch over templates:</h2>
+<p>Pick ONE OR MORE options.<br />
+1. <strong>Wanting to share the implementation code in header files with users of the interface.</strong><br />
+2. <strong>Wanting to hide the implementation code for faster compilation times.</strong><br />
+3. <strong>Better code optimisation opportunities for the compiler.</strong><br />
+4. <strong>Better compilation error messages (pre C++20)</strong><br />
+5. <strong>Ability to selectively include functions in the API based on the types involved.</strong></p>
+<h3 id="elaboration">Elaboration:</h3>
+<ul>
+<li><p><strong>Templates:</strong> in C++ allow for compile-time polymorphism. This means you can have different implementations of a function for different types, and the appropriate implementation is chosen at compile time based on the type of the arguments. This is known as function template specialization. It allows you to selectively include functions in the API based on the types involved.</p></li>
+<li><p><strong>Virtual dispatch:</strong> is a form of runtime polymorphism and doesn’t provide this ability. With virtual dispatch, you define a set of functions in a base class and these can be overridden in derived classes. However, the functions that are part of the interface are fixed at compile time and can’t be selectively included based on the types involved at runtime.</p></li>
+</ul>
+<h2 id="answer-reasons-to-prefer-virtual-dispatch-over-templates">Answer: Reasons to prefer virtual dispatch over templates:</h2>
+<h3 id="correct">Correct:</h3>
+<p>Here are the common reasons to prefer virtual dispatch over templates:</p>
+<ol start="2" type="1">
+<li><p><strong>Wanting to hide the implementation code for faster compilation times:</strong> Templates require the implementation to be available at compile time, which can lead to longer compilation times and larger binary sizes. Virtual dispatch allows you to hide the implementation details in a source file, potentially leading to faster compilation times.</p></li>
+<li><p><strong>Better compilation error messages (pre C++20):</strong> Templates can sometimes produce complex and difficult-to-understand error messages, especially when template metaprogramming is involved. Virtual dispatch can often lead to clearer error messages.</p></li>
+</ol>
+<h3 id="incorrect">Incorrect:</h3>
+<ol type="1">
+<li><strong>Wanting to share the implementation code in header files with users of the interface.</strong> Option is not a correct reason because it’s actually a characteristic of templates, not virtual dispatch.</li>
+</ol>
+<p>When you use templates in C++, the implementation of the template must be available to the compiler when it’s instantiated. This is typically achieved by placing the implementation in the header file. Therefore, using templates often implies sharing the implementation code in header files with users of the interface.</p>
+<p>On the other hand, virtual dispatch in C++ is a feature of polymorphism and is typically used with classes and inheritance. The implementation of a virtual function can be provided in a source (.cpp) file, separate from the header file. This allows for hiding the implementation details from the users of the interface, which aligns with the principle of encapsulation in object-oriented programming.</p>
+<p>So, if you want to share the implementation code in header files with users of the interface, you would typically use templates, not virtual dispatch. Hence, this option is not a correct reason to prefer virtual dispatch over templates.</p>
+<h1 id="related-questions-that-can-be-asked-during-this-question-in-the-interview.">Related questions that can be asked during this question in the interview.</h1>
+<h2 id="various-techniques-and-patters-for-compile-time-polymorphism-equivalent-to-virtual-dispatch.">Various techniques and patters for compile time polymorphism equivalent to virtual dispatch.</h2>
+<p>A simple example where we have different types of shapes and we want to calculate their area. Here’s how you might implement this using different techniques:</p>
+<p><strong>1. Virtual Dispatch (Runtime Polymorphism)</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">class</span> Shape {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="kw">virtual</span> <span class="dt">double</span> area() <span class="at">const</span> = <span class="dv">0</span>;  <span class="co">// Pure virtual function</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>};</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="kw">class</span> Circle : <span class="kw">public</span> Shape {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>    <span class="dt">double</span> radius;</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>    Circle(<span class="dt">double</span> r) : radius(r) {}</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> <span class="kw">override</span> { <span class="cf">return</span> <span class="fl">3.14159</span> * radius * radius; }</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>};</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="kw">class</span> Square : <span class="kw">public</span> Shape {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>    <span class="dt">double</span> side;</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a>    Square(<span class="dt">double</span> s) : side(s) {}</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> <span class="kw">override</span> { <span class="cf">return</span> side * side; }</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a>};</span></code></pre></div>
+<p><strong>2. CRTP (Compile-time Polymorphism)</strong> CRTP stands for “Curiously Recurring Template Pattern”. It is a design pattern in C++ where a class X derives from a class template instantiation using X itself as template argument.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> Derived&gt;</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">class</span> Shape {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> { <span class="cf">return</span> <span class="kw">static_cast</span>&lt;<span class="at">const</span> Derived*&gt;(<span class="kw">this</span>)-&gt;area(); }</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>};</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a><span class="kw">class</span> Circle : <span class="kw">public</span> Shape&lt;Circle&gt; {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>    <span class="dt">double</span> radius;</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>    Circle(<span class="dt">double</span> r) : radius(r) {}</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> { <span class="cf">return</span> <span class="fl">3.14159</span> * radius * radius; }</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>};</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a><span class="kw">class</span> Square : <span class="kw">public</span> Shape&lt;Square&gt; {</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>    <span class="dt">double</span> side;</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>    Square(<span class="dt">double</span> s) : side(s) {}</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> { <span class="cf">return</span> side * side; }</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>};</span></code></pre></div>
+<p><strong>3. Tag Dispatching</strong> SFINAE stands for “Substitution Failure Is Not An Error”. It is a rule in C++ template instantiation, which says that <em>“if a substitution of template parameters fails, the instantiation is removed from the overload resolution set instead of causing a compile error.”.</em></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">struct</span> Circle { <span class="dt">double</span> radius; };</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="kw">struct</span> Square { <span class="dt">double</span> side; };</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> Shape&gt;</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a><span class="dt">double</span> area(<span class="at">const</span> Shape&amp; shape);</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a><span class="kw">template</span> &lt;&gt;</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="dt">double</span> area&lt;Circle&gt;(<span class="at">const</span> Circle&amp; circle) { <span class="cf">return</span> <span class="fl">3.14159</span> * circle.radius * circle.radius; }</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a><span class="kw">template</span> &lt;&gt;</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a><span class="dt">double</span> area&lt;Square&gt;(<span class="at">const</span> Square&amp; square) { <span class="cf">return</span> square.side * square.side; }</span></code></pre></div>
+<p><strong>4. Expression Templates</strong></p>
+<p>Expression templates are a bit more complex and are typically used for building and evaluating mathematical expressions at compile time. They might be overkill for this simple example.</p>
+<p>Here is a simple example of expression templates. This technique is often used in scientific computing to optimize performance.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">typename</span> E&gt;</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">class</span> VecExpression {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>    <span class="dt">double</span> <span class="kw">operator</span> <span class="at">const</span> { <span class="cf">return</span> <span class="kw">static_cast</span>&lt;E <span class="at">const</span>&amp;&gt;(*<span class="kw">this</span>)[i]; }</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a>    <span class="co">// ...</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a>};</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">typename</span> E1, <span class="kw">typename</span> E2&gt;</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a><span class="kw">class</span> VecSum : <span class="kw">public</span> VecExpression&lt;VecSum&lt;E1, E2&gt;&gt; {</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>    E1 <span class="at">const</span>&amp; _u;</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a>    E2 <span class="at">const</span>&amp; _v;</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a>    VecSum(E1 <span class="at">const</span>&amp; u, E2 <span class="at">const</span>&amp; v) : _u(u), _v(v) {}</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a>    <span class="dt">double</span> <span class="kw">operator</span> <span class="at">const</span> { <span class="cf">return</span> _u[i] + _v[i]; }</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a>    <span class="co">// ...</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a>};</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">typename</span> E1, <span class="kw">typename</span> E2&gt;</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true"></a>VecSum&lt;E1,E2&gt; <span class="kw">operator</span>+(E1 <span class="at">const</span>&amp; u, E2 <span class="at">const</span>&amp; v) { <span class="cf">return</span> VecSum&lt;E1,E2&gt;(u,v); }</span></code></pre></div>
+<p><strong>5. Compile-time type-based dispatch</strong></p>
+<p>This technique involves using templates and type traits, and it’s more advanced than the others. It might be overkill for this simple example.</p>
+<p>Here is a simple example of compile-time type-based dispatch. This technique uses templates and type traits to dispatch a function to a templated member variable if that variable derives from a given class.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="dt">bool</span> B, <span class="kw">class</span> T = <span class="dt">void</span>&gt;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="kw">struct</span> enable_if {};</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="kw">struct</span> enable_if&lt;<span class="kw">true</span>, T&gt; { <span class="kw">typedef</span> T type; };</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">class</span> Base, <span class="kw">class</span> T&gt;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="kw">struct</span> Derived_from {</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>    <span class="at">static</span> <span class="dt">void</span> constraints(T* p) { Base* pb = p; }</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>    Derived_from() { <span class="dt">void</span>(*p)(T*) = constraints; }</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>};</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="kw">struct</span> Container : Derived_from&lt;Container_base, T&gt; {</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>    <span class="co">// Container-specific code</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>};</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a><span class="kw">typename</span> enable_if&lt;Is_container&lt;T&gt;::value, <span class="dt">void</span>&gt;::type</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>use(T&amp; x)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>{</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>    <span class="co">// use x as a container</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a>}</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a><span class="kw">typename</span> enable_if&lt;!Is_container&lt;T&gt;::value, <span class="dt">void</span>&gt;::type</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a>use(T&amp; x)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a>{</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a>    <span class="co">// use x as a scalar</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a>}</span></code></pre></div>
+<p><strong>6. Overloading</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">struct</span> Circle { <span class="dt">double</span> radius; };</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="kw">struct</span> Square { <span class="dt">double</span> side; };</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="dt">double</span> area(<span class="at">const</span> Circle&amp; circle) { <span class="cf">return</span> <span class="fl">3.14159</span> * circle.radius * circle.radius; }</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="dt">double</span> area(<span class="at">const</span> Square&amp; square) { <span class="cf">return</span> square.side * square.side; }</span></code></pre></div>
+<p><strong>7. SFINAE</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> = <span class="bu">std::</span>enable_if_t&lt;<span class="bu">std::</span>is_same_v&lt;T, Circle&gt;&gt;&gt;</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="dt">double</span> area(<span class="at">const</span> T&amp; circle) { <span class="cf">return</span> <span class="fl">3.14159</span> * circle.radius * circle.radius; }</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> = <span class="bu">std::</span>enable_if_t&lt;<span class="bu">std::</span>is_same_v&lt;T, Square&gt;&gt;&gt;</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a><span class="dt">double</span> area(<span class="at">const</span> T&amp; square) { <span class="cf">return</span> square.side * square.side; }</span></code></pre></div>
+<p><strong>8. constexpr If (C++17)</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> Shape&gt;</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="dt">double</span> area(<span class="at">const</span> Shape&amp; shape) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>    <span class="cf">if</span> <span class="kw">constexpr</span> (<span class="bu">std::</span>is_same_v&lt;Shape, Circle&gt;) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>        <span class="cf">return</span> <span class="fl">3.14159</span> * shape.radius * shape.radius;</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>    } <span class="cf">else</span> <span class="cf">if</span> <span class="kw">constexpr</span> (<span class="bu">std::</span>is_same_v&lt;Shape, Square&gt;) {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>        <span class="cf">return</span> shape.side * shape.side;</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>    }</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>}</span></code></pre></div>
+<p><strong>9. Concepts (C++20)</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">template</span>&lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="kw">concept</span> Shape = <span class="kw">requires</span>(T t) {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>    { t.area() } -&gt; <span class="bu">std::</span>same_as&lt;<span class="dt">double</span>&gt;;</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>};</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="kw">class</span> Circle {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>    <span class="dt">double</span> radius;</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a>    Circle(<span class="dt">double</span> r) : radius(r) {}</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> { <span class="cf">return</span> <span class="fl">3.14159</span> * radius * radius; }</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a>};</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a><span class="kw">class</span> Square {</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a>    <span class="dt">double</span> side;</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a><span class="kw">public</span>:</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a>    Square(<span class="dt">double</span> s) : side(s) {}</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a>    <span class="dt">double</span> area() <span class="at">const</span> { <span class="cf">return</span> side * side; }</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a>};</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a><span class="kw">template</span>&lt;Shape S&gt;</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a><span class="dt">void</span> printArea(<span class="at">const</span> S&amp; shape) {</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true"></a>    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Area: &quot;</span> &lt;&lt; shape.area() &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true"></a>}</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true"></a><span class="dt">int</span> main() {</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true"></a>    Circle c(<span class="fl">5.0</span>);</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true"></a>    Square s(<span class="fl">5.0</span>);</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true"></a>    printArea(c);  <span class="co">// prints: Area: 78.5398</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true"></a>    printArea(s);  <span class="co">// prints: Area: 25</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true"></a>}</span></code></pre></div>
+<p>In this example, the printArea function template uses the Shape concept to constrain its template parameter, ensuring that it only accepts types that satisfy the Shape concept.</p>
+<h3 id="heres-a-brief-overview-of-when-you-might-want-to-use-each-technique-and-their-advantages">Here’s a brief overview of when you might want to use each technique and their advantages:</h3>
+<ol type="1">
+<li><p><strong>Virtual Dispatch (Runtime Polymorphism)</strong>: Use when you have a hierarchy of related types and you want to write code that can work with any type in the hierarchy. The advantage is that it allows for dynamic behavior based on the runtime type of the object.</p></li>
+<li><p><strong>CRTP (Curiously Recurring Template Pattern)</strong>: Use when you want to achieve static polymorphism (i.e., behavior that depends on the type, but is resolved at compile time). The advantage is that it can provide performance benefits over virtual dispatch by avoiding virtual function calls.</p></li>
+<li><p><strong>Tag Dispatching</strong>: Use when you have several overloaded functions and you want to select one based on the type traits of the arguments. The advantage is that it can make your code more modular and easier to extend.</p></li>
+<li><p><strong>Expression Templates</strong>: Use when you’re implementing mathematical expressions or similar constructs and you want to avoid unnecessary temporary objects. The advantage is that it can provide significant performance benefits.</p></li>
+<li><p><strong>Compile-time type-based dispatch</strong>: Use when you want to select different implementations based on the properties of types at compile time. The advantage is that it can make your code more flexible and easier to maintain.</p></li>
+<li><p><strong>Overloading</strong>: Use when you have several functions that do similar things but for different types. The advantage is that it can make your code easier to read and write.</p></li>
+<li><p><strong>SFINAE (Substitution Failure Is Not An Error)</strong>: Use when you want to enable or disable certain template instantiations based on the properties of the template arguments. The advantage is that it can make your templates more flexible and robust.</p></li>
+<li><p><strong>constexpr If (C++17)</strong>: Use when you want to conditionally compile code based on a constant expression. The advantage is that it can make your code more efficient by eliminating unnecessary code at compile time.</p></li>
+<li><p><strong>Concepts (C++20)</strong>: Use when you want to specify the requirements on template arguments. The advantage is that it can make your templates easier to use and understand, and it can provide better error messages when the requirements are not met.</p></li>
+</ol>
+<h3 id="there-are-certain-scenarios-where-virtual-dispatch-can-achieve-things-that-crtp-cannot-or-can-do-better-than-crtp">There are certain scenarios where virtual dispatch can achieve things that CRTP cannot, or can do better than CRTP:</h3>
+<ol type="1">
+<li><p><strong>Runtime Polymorphism</strong>: The primary advantage of virtual dispatch is that it enables runtime polymorphism. This means you can decide which function to call based on the dynamic type of an object at runtime. CRTP, on the other hand, resolves the function call at compile time, so it doesn’t support this kind of dynamic behavior.</p></li>
+<li><p><strong>Ease of Use with Collections</strong>: If you have a collection of objects of different types derived from a common base class, you can easily iterate over the collection and call a virtual function on each object, and the correct function will be called based on the dynamic type of the object.</p>
+<p>With CRTP, this is not straightforward because objects of different instantiations of the CRTP template are of different types.</p></li>
+<li><p><strong>Code Size</strong>: Virtual dispatch can potentially result in smaller code size compared to CRTP. With CRTP, the compiler generates a separate version of the function for each type that it’s used with, which can increase the code size. With virtual dispatch, there’s only one version of the function in the base class.</p></li>
+<li><p><strong>Simplicity</strong>: Virtual dispatch can be simpler to use and understand, especially for less experienced programmers. CRTP involves more complex C++ features like templates and can be harder to get right.</p></li>
+</ol>
+<h4 id="a-real-world-scenario-where-runtime-polymorphism-virtual-dispatch-is-beneficial-and-cannot-be-replaced-by-crtp-or-other-compile-time-polymorphism-techniques.">A real-world scenario where runtime polymorphism (virtual dispatch) is beneficial and cannot be replaced by CRTP or other compile-time polymorphism techniques.</h4>
+<p>Imagine you’re developing a graphics rendering engine. In this engine, you have a variety of different shapes that can be drawn, such as circles, rectangles, triangles, etc. Each of these shapes is represented by a different class (Circle, Rectangle, Triangle, etc.), and all of these classes inherit from a common base class, Shape.</p>
+<p>Now, you want to maintain a collection of these shapes in your engine, and you want to be able to iterate over this collection and call a <code>draw()</code> function on each shape to draw it on the screen. The implementation of the <code>draw()</code> function is different for each shape (i.e., the way you draw a circle is different from the way you draw a rectangle or a triangle).</p>
+<p>Here’s where runtime polymorphism comes into play. You can declare a virtual <code>draw()</code> function in the base Shape class and override this function in each of the derived classes (Circle, Rectangle, Triangle, etc.). Then, you can maintain a collection of Shape pointers, where each pointer points to an object of one of the derived classes. When you iterate over this collection and call the <code>draw()</code> function on each Shape pointer, the correct <code>draw()</code> function will be called based on the dynamic type of the object that the pointer points to.</p>
+<p>This is something that cannot be achieved with CRTP or other compile-time polymorphism techniques. With CRTP, the <code>draw()</code> function call would be resolved at compile time, so you wouldn’t be able to use a single collection of Shape objects to hold objects of different types and call the correct <code>draw()</code> function on each one at runtime. This is a clear advantage of virtual dispatch over CRTP in this scenario.</p>
+<h4 id="here-are-a-few-scenarios-in-an-investment-bank-trading-system-where-runtime-polymorphism-virtual-dispatch-might-be-beneficial">Here are a few scenarios in an Investment Bank Trading System where runtime polymorphism (virtual dispatch) might be beneficial:</h4>
+<ol type="1">
+<li><p><strong>Different Types of Financial Instruments</strong>: An investment bank deals with various types of financial instruments like stocks, bonds, derivatives, etc. Each of these can be represented by a different class (Stock, Bond, Derivative, etc.), all inheriting from a common base class, FinancialInstrument. Each instrument type might have a different method to calculate its price, risk, or other metrics. Using virtual dispatch, you can maintain a collection of FinancialInstrument pointers, and call the appropriate method on each one at runtime.</p></li>
+<li><p><strong>Order Execution Strategies</strong>: Different strategies might be used to execute orders based on various factors like order size, market volatility, etc. These strategies can be represented by different classes inheriting from a common base class, OrderExecutionStrategy. Using virtual dispatch, the appropriate strategy can be chosen at runtime based on the current market conditions.</p></li>
+<li><p><strong>Risk Models</strong>: Different risk models might be used to calculate the risk associated with a portfolio. These models can be represented by different classes inheriting from a common base class, RiskModel. Using virtual dispatch, the appropriate model can be chosen at runtime based on the portfolio’s characteristics.</p></li>
+<li><p><strong>Pricing Models</strong>: Different pricing models might be used to price derivatives based on their characteristics. These models can be represented by different classes inheriting from a common base class, PricingModel. Using virtual dispatch, the appropriate model can be chosen at runtime.</p></li>
+</ol>
+<p>In all these scenarios, the decision about which method to call is made at runtime based on the dynamic type of the objects. This is something that cannot be achieved with compile-time polymorphism techniques like CRTP. The ability to make these decisions at runtime is a clear advantage of virtual dispatch in these scenarios.</p>
+
+</body>
+</html>
