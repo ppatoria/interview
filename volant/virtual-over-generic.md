@@ -1,3 +1,43 @@
+<style>
+/* Solarized Light color theme */
+body {
+  background-color: #fdf6e3;
+  color: #657b83;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  color: #268bd2;
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 30px;
+}
+
+h2 {
+  color: #2aa198;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+h3 {
+  color: #859900;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #657b83;
+}
+
+body {
+  margin-left: 220px;
+}
+</style>
+
 # Virtual over Generic
 
 ## Question: Which of the following are common reasons to prefer virtual dispatch over templates:
