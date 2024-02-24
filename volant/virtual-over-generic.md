@@ -143,7 +143,31 @@ public:
     Square(double s) : side(s) {}
     double area() const { return side * side; }
 };
+
+int main() {
+    using ShapeTypes = std::variant<Circle, Square>;
+    std::vector<ShapeTypes> shapes;
+
+    shapes.push_back(Circle(10));
+    shapes.push_back(Square(10));
+
+    for(const auto& shape : shapes){
+        std::visit( [&](auto& s) { std::cout << s.area() << std::endl; }, shape);
+    }
+
+    return 0;
+}
+
 ```
+1. **CRTP and Heterogeneous Container**: Yes, the code you've shown using CRTP and `std::variant`/`std::visit` can achieve a similar effect as runtime polymorphism with virtual dispatch. However, it's important to note that while `std::variant`/`std::visit` does provide a form of polymorphism, it's not the same as runtime polymorphism with virtual dispatch. The `std::visit` call does involve a form of dynamic dispatch, but it's implemented differently from virtual dispatch and has different trade-offs.
+
+2. **How variant/visit works**: `std::variant` is a type-safe union, which can hold a value of any of the specified types. When you call `std::visit` on a `std::variant`, it checks the current active type of the variant and then calls the appropriate function (or "visitor") for that type. This is done at runtime, but the set of possible types is fixed at compile time. This is why `std::variant`/`std::visit` can provide a form of polymorphism.
+
+3. **Advantages and Disadvantages of Virtual Dispatch vs Variant/Visit**:
+   - **Virtual Dispatch**: The main advantage of virtual dispatch is that it allows for true runtime polymorphism, where the set of possible types can be extended by deriving new classes, and the decision of which function to call is made at runtime based on the dynamic type of the object. The main disadvantage is that it involves a level of indirection (the vtable), which can have a performance cost. It also requires heap allocation if you want to store derived objects in a container of base class pointers.
+   - **Variant/Visit**: The main advantage of `std::variant`/`std::visit` is that it provides a form of polymorphism while avoiding the need for heap allocation or the indirection of a vtable. It can be more efficient than virtual dispatch in some cases. The main disadvantage is that the set of possible types is fixed at compile time, so you can't extend it by deriving new classes. It also involves a form of dynamic dispatch, as `std::visit` needs to check the active type of the variant at runtime.
+
+4. **Advantage of CRTP + variant/visit vs runtime polymorphism using virtual function and virtual dispatch**: The combination of CRTP and `std::variant`/`std::visit` can provide a form of polymorphism that is more efficient than virtual dispatch in some cases, as it avoids the need for heap allocation and the indirection of a vtable. It can also take advantage of compile-time polymorphism for some operations, thanks to CRTP. However, it doesn't support true runtime polymorphism, as the set of possible types is fixed at compile time. So the choice between these techniques depends on the specific requirements of your program.
 
 **3. Tag Dispatching**
     SFINAE stands for “Substitution Failure Is Not An Error”.
@@ -291,18 +315,20 @@ public:
     double area() const { return side * side; }
 };
 
-template<Shape S>
-void printArea(const S& shape) {
-    std::cout << "Area: " << shape.area() << '\n';
-}
-
 int main() {
-    Circle c(5.0);
-    Square s(5.0);
+    using ShapeTypes = std::variant<Circle, Square>;
+    std::vector<ShapeTypes> shapes;
 
-    printArea(c);  // prints: Area: 78.5398
-    printArea(s);  // prints: Area: 25
+    shapes.push_back(Circle(10));
+    shapes.push_back(Square(10));
+
+    for(const auto& shape : shapes){
+        std::visit( [&](auto& s) { std::cout << s.area() << std::endl; }, shape);
+    }
+
+    return 0;
 }
+
 ```
 In this example,
 the printArea function template uses the Shape concept to constrain its template parameter,
