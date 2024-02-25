@@ -1,0 +1,59 @@
+/* Custom CSS for your technical article */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3 {
+    color: #333;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 28px;
+}
+
+h2 {
+    font-size: 24px;
+}
+
+h3 {
+    font-size: 20px;
+}
+
+p {
+    color: #444;
+    line-height: 1.5;
+}
+
+pre {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    overflow: auto;
+}
+
+code {
+    font-family: Consolas, monospace;
+    font-size: 14px;
+}
+
+/* Add more styles as needed */
+
+/* Table of Contents (TOC) styles */
+.toc {
+    /* Customize TOC appearance */
+}
+
+/* Title style */
+.title {
+    font-size: 32px;
+    color: #0074d9;
+}
+
+/* Syntax highlighting (using highlight.js) */
+pre code {
+    font-size: 14px;
+}
