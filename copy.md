@@ -4,26 +4,21 @@
     A type is considered POD if it is both trivial and standard-layout.
     This means it can be safely copied with `memcpy` or serialized to and from byte arrays.
     Examples include basic types like `int`, `char`, `double`, etc., as well as arrays and structs that only contain POD types.
-
     A POD type in C++ is a data type that has no "magic" going on in the structure, such as hidden pointers to vtables, offsets that get applied to the address when it is cast to other types, constructors, or destructors.
-
     They can be copied into an array of `char` or `unsigned char`, and safely copied back into a variable of the POD type.
-
     Examples of POD types include:
         - All fundamental types (like `int`, `char`, `double`, etc.)
         - Enumerations
         - Pointers
         - Arrays of POD types
-        - Classes and structs that only contain POD types as members, have no user-defined destructor, no user-defined copy assignment operator, and no non-static members of pointer-to-member type¹.
-
+        - Classes and structs that only contain POD types as members, have no user-defined destructor, no user-defined copy assignment operator, and no non-static members of pointer-to-member type.
     Please note that the rules surrounding POD were relaxed in C++11, allowing more types to qualify as POD.
     For example, in C++11 and later, a class with a user-defined constructor can still be a POD type if the constructor is trivial.
     You can use `std::is_pod<T>()` in C++11 and later to check if a type `T` is a POD¹.
-    However, `std::is_pod` is deprecated in C++20 and removed in C++23¹.
+    However, `std::is_pod` is deprecated in C++20 and removed in C++23.
 
    Here are some characteristics of POD types:
-### Trivial Types:
-   POD are trivial types, meaning they have a
+### POD are trivial types, meaning they have a
    1. **Trivial Default Constructor**:
       A default constructor is trivial if it is not user-provided, meaning it is implicitly-defined or defaulted.
       It performs no action and all data types compatible with the C language (POD types) are trivially default-constructible.
