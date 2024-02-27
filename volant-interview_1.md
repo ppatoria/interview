@@ -156,48 +156,6 @@ The other options are not generally considered good practices:
 * **To help support deep-copying of a runtime polymorphic object, provide a “virtual size_t size() const” function:** This is not a common or recommended practice for supporting deep copying of polymorphic objects. Instead, a common practice is to provide a virtual clone() function.
 * **memset() your large objects to 0 bytes to avoid uninitialized memory reads:** In C++, using memset() on non-trivial objects can lead to undefined behavior. It’s better to initialize your objects properly using constructors. 😊
 
-# Question: Which of the following are plausible reasonable things todo with iostreams?
-Pick ONE OR MORE options
-```c++
-* struct X { int i; double d; }; inline std::ostream& operator<<(std::ostream& os, const X& x) { return os << x.i << ", " << x.d; }
-```
-
-```c++
-* struct X { int i; double d; };inline std::istream& operator>>(std::istream& is, X& x) { char c; if (is >> x.i >> c >> x.d && c != ',') is.setstate(std::ios::failbit); return is;}
-```
-
-```c++
-* if (std::ifstream in{filename}) while (!in.eof()) { getline(in, my_string); process(my_string); }
-```
-
-```c++
-* #define STR(X) static_cast<std::ostringstream&&>(std::ostringstream{} <<X).str() // for this, ignore the general evil-ness of macros
-```
-
-## Solution: 
-Here are the plausible and reasonable things to do with iostreams from your options:
-
-* **Defining output operator for a struct:** This is a common practice in C++. It allows you to print the contents of the struct in a formatted way. So, this is plausible:
-```c++
-struct X { int i; double d; };
-inline std::ostream& operator<<(std::ostream& os, const X& x) { return os << x.i << ", " << x.d; }
-```
-
-* **Defining input operator for a struct:** This is also a common practice. It allows you to read the contents of the struct from an input stream. So, this is plausible:
-```c++
-struct X { int i; double d; };
-inline std::istream& operator>>(std::istream& is, X& x) { char c; if (is >> x.i >> c >> x.d && c != ',') is.setstate(std::ios::failbit); return is;}
-```
-
-* **Reading a file line by line:** This is a common way to read a file line by line in C++. However, using while (!in.eof()) is not recommended because it can result in the last line being processed twice if it doesn’t end with a newline. A better way is while (getline(in, my_string)). So, this is plausible with a slight modification:
-```c++
-if (std::ifstream in{filename}) while (getline(in, my_string)) { process(my_string); }
-```
-
-* **Defining a macro to convert something to a string:** While this is plausible and can work, it’s generally not recommended to use macros in C++ when alternatives exist. In this case, you could use a template function or a std::ostringstream directly. So, this is plausible but not recommended:
-```c++
-#define STR(X) static_cast<std::ostringstream&&>(std::ostringstream{} <<X).str()
-```
 # Question: Which of the following are true statements about preprocessor macros i.e. #defines
 Pick ONE OR MORE options
 
@@ -228,6 +186,67 @@ The preprocessor’s token-pasting operator (##) allows you to combine tokens to
 The statement “preprocessor defines are implicitly undefined at the end of the scope (e.g. namespace, class, function) in which they’re defined” is not true. 
 Preprocessor definitions are not aware of C++ scopes. They remain defined until they are #undef’ed or until the end of the translation unit. 😊
 
+# Question: Which of the following are plausible reasonable things todo with iostreams?
+Pick ONE OR MORE options
+```c++
+* struct X { int i; double d; };
+inline std::ostream& operator<<(std::ostream& os, const X& x) {
+    return os << x.i << ", " << x.d;
+}
+```
+
+```c++
+* struct X { int i; double d; };
+inline std::istream& operator>>(std::istream& is, X& x) {
+    char c;
+    if (is >> x.i >> c >> x.d && c != ',')
+        is.setstate(std::ios::failbit);
+        return is;
+}
+```
+
+```c++
+* if (std::ifstream in{filename})
+    while (!in.eof()) {
+        getline(in, my_string);
+        process(my_string);
+    }
+```
+
+```c++
+* #define STR(X) static_cast<std::ostringstream&&>(std::ostringstream{} <<X).str() // for this, ignore the general evil-ness of macros
+```
+
+## Solution: 
+Here are the plausible and reasonable things to do with iostreams from your options:
+
+* **Defining output operator for a struct:** This is a common practice in C++. It allows you to print the contents of the struct in a formatted way. So, this is plausible:
+```c++
+struct X { int i; double d; };
+inline std::ostream& operator<<(std::ostream& os, const X& x) { return os << x.i << ", " << x.d; }
+```
+
+* **Defining input operator for a struct:** This is also a common practice. It allows you to read the contents of the struct from an input stream. So, this is plausible:
+```c++
+struct X { int i; double d; };
+inline std::istream& operator>>(std::istream& is, X& x) { char c; if (is >> x.i >> c >> x.d && c != ',') is.setstate(std::ios::failbit); return is;}
+```
+
+* **Reading a file line by line:** This is a common way to read a file line by line in C++. However, using while (!in.eof()) is not recommended because it can result in the last line being processed twice if it doesn’t end with a newline. A better way is while (getline(in, my_string)). So, this is plausible with a slight modification:
+```c++
+if (std::ifstream in{filename})
+    while (getline(in, my_string)) {
+        process(my_string);
+    }
+```
+
+* **Defining a macro to convert something to a string:**
+  While this is plausible and can work, it’s generally not recommended to use macros in C++ when alternatives exist.
+  In this case, you could use a template function or a std::ostringstream directly. So, this is plausible but not recommended:
+
+```c++
+#define STR(X) static_cast<std::ostringstream&&>(std::ostringstream{} <<X).str()
+```
 # Question: Which of the following are true:
 Pick ONE OR MORE options
 
