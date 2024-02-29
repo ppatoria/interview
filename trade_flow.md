@@ -50,7 +50,7 @@ Break down of the flow from the client's initial order to the final execution on
 
 In summary, the journey from client order to execution involves FIX communication, trader decisions, algorithmic analysis, smart routing, exchange execution, and meticulous record-keeping. Algorithmic trading ensures efficiency, liquidity, and reduced human error, all while dancing to the rhythm of market dynamics.
 
-# How the **FIX protocol** facilitates the connection between the client's **Order Management System (OMS)** and the investment bank's trading infrastructure.
+# How the FIX protocol facilitates the connection between the client's Order Management System (OMS) and the investment bank's trading infrastructure.
 
 1. **Role of the OMS**:
    - The **Order Management System (OMS)** is a critical component for buy-side firms (such as asset managers, hedge funds, or institutional investors).
@@ -201,10 +201,10 @@ I'll illustrate this with real-world scenarios and step-by-step details:
    - The OMS updates the client on order status.
 
 8. **Dynamic Data Usage**:
-   - **Real-Time Market Data**: Algorithms use real-time prices, volume, and liquidity.
-   - **Adaptive Logic**: Algorithms adjust based on intraday volatility and liquidity.
+   - **Real-Time Market Data** : Algorithms use real-time prices, volume, and liquidity.
+   - **Adaptive Logic**        : Algorithms adjust based on intraday volatility and liquidity.
 
-### **Trade Flow Summary**:
+### Trade Flow Summary:
 1. Client initiates an order.
 2. Order routing system evaluates order characteristics.
 3. If personalized attention needed, route to trader desk; else, to algorithmic desk.

@@ -148,7 +148,8 @@ Here are the true statements about preprocessor macros i.e. #defines from your o
     Note that this is a simplistic example and real-world usage can be much more complex.
     Also, it’s worth mentioning that excessive use of macros can make code harder to read and debug, so they should be used judiciously.
 
-    -  **Macro Definitions**:
+1. **Macro Definitions**:
+
         The first three lines after `#include <iostream>` are macro definitions.
         These are instructions to the preprocessor, which is a part of the compiler that runs before the actual compilation process.
 
@@ -165,7 +166,7 @@ Here are the true statements about preprocessor macros i.e. #defines from your o
           This macro takes one argument and concatenates it with the line number where the macro is invoked (`__LINE__`).
           The `__LINE__` macro is a special predefined macro that expands to the current line number in the source code.
 
-    2. **Main Function**: The `main` function is where the macros are used.
+2. **Main Function**: The `main` function is where the macros are used.
 
         - `int MAKE_UNIQUE(my_var) = 10;`:
           Here, `MAKE_UNIQUE(my_var)` is replaced by the preprocessor with `my_var8`, because the macro is invoked on line 8.
