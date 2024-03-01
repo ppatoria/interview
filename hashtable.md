@@ -96,3 +96,6 @@ if (it != map.end()) {
 
 In this code, `map.find(keyToSearch)` returns an iterator to the element with key `keyToSearch` if it is found, or `map.end()` if it is not found.
 The key-value pair can be accessed through the iterator `it`.
+
+# Iterators to elements in an unordered_map may be invalidated by insertions?
+This is true. According to the C++ Standard, insertions into an unordered_map can invalidate iterators if rehashing occurs.
