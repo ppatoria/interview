@@ -250,67 +250,83 @@ if (std::ifstream in{filename})
 # Question: Which of the following are true:
 Pick ONE OR MORE options
 
-* the const keyword allows you to guarantee all class invariants
-* iterators to elements in an unordered_map may be invalidated by insertions
-* constexpr always ensures something is evaluated at compile time
-* the C++ Standard requires compilers to ensure lambdas never capture dangling references
-* given a std::string containing the source code for a function call and arguments, C++ Standard Library functions let you evaluate the function call and save the results in another string
-* a container providing iterators is functionally more flexible than one providing "void visit(auto functor_to_call_for_each_node)" instead
-* move semantics only help if a class has data-owning pointer data members
-* the member function "template <typename T> void Class::function(T&& t) { f(t); member_save_t_ = std::move(t); }" uses std::move() properly
-* sigaction-installed async signal handlers shouldn't write any output - directly or indirectly - using printf, std::cout or std::cerr
-
-## Solution:
-Here are the true statements from your options:
-### True
-* Iterators to elements in an unordered_map may be invalidated by insertions: This is true.
-According to the C++ Standard, insertions into an unordered_map can invalidate iterators if rehashing occurs.
-
-* The C++ Standard requires compilers to ensure lambdas never capture dangling references:
-This is not directly stated in the C++ Standard. However, it’s the programmer’s responsibility to ensure that lambdas do not capture dangling references, as this would lead to undefined behavior.
-
-* A container providing iterators is functionally more flexible than one providing “void visit(auto functor_to_call_for_each_node)” instead: This is generally true.
-Iterators provide more flexibility as they allow the user of the container to control the traversal, whereas a visit function encapsulates the traversal within the container.
-
-* Sigaction-installed async signal handlers shouldn’t write any output - directly or indirectly - using printf, std::cout or std::cerr: This is true.
-The functions printf, std::cout, and std::cerr are not async-signal-safe. Using them in a signal handler can result in undefined behavior.
-
-### The other statements are not generally true:
-
-* The const keyword allows you to guarantee all class invariants:
-The const keyword can help maintain some invariants, but it doesn’t guarantee all class invariants. Class invariants depend on the logic of your code.
-
-* Constexpr always ensures something is evaluated at compile time: This is not always true.
-A constexpr function or variable may be evaluated at compile time, but it can also be evaluated at runtime if its value is not known at compile time.
-
-* Given a std::string containing the source code for a function call and arguments, C++ Standard Library functions let you evaluate the function call and save the results in another string:
-This is not possible with the C++ Standard Library. C++ does not support this kind of reflection or interpretation.
-
-* Move semantics only help if a class has data-owning pointer data members: This is not true.
-Move semantics can also be beneficial for classes that manage other kinds of resources, or classes with members that themselves benefit from move semantics.
-
-* The member function “template <typename T> void Class::function(T&& t) { f(t); member_save_t_ = std::move(t); }” uses std::move() properly: This is not necessarily true.
-After f(t**, t may be in a moved-from state, and moving from it again into member_save_t_ may not be safe or meaningful. It depends on the specifics of the type T and the function f.
+## The const keyword allows you to guarantee all class invariants?
+    The const keyword can help maintain some invariants, but it doesn’t guarantee all class invariants.
+    Class invariants depend on the logic of your code.
+##  Iterators to elements in an unordered_map may be invalidated by insertions ?
+    This is true.
+    According to the C++ Standard, insertions into an unordered_map can invalidate iterators if rehashing occurs.
+## constexpr always ensures something is evaluated at compile time?
+    This is not always true.
+    A constexpr function or variable may be evaluated at compile time, but it can also be evaluated at runtime if its value is not known at compile time.
+## The C++ Standard requires compilers to ensure lambdas never capture dangling references?
+    This is not directly stated in the C++ Standard.
+    However, it’s the programmer’s responsibility to ensure that lambdas do not capture dangling references, as this would lead to undefined behavior.
+## Given a std::string containing the source code for a function call and arguments, C++ Standard Library functions let you evaluate the function call and save the results in another string?
+    This is not possible with the C++ Standard Library. C++ does not support this kind of reflection or interpretation.
+## A container providing iterators is functionally more flexible than one providing "void visit(auto functor_to_call_for_each_node)" instead ?
+    This is generally true.
+    Iterators provide more flexibility as they allow the user of the container to control the traversal, whereas a visit function encapsulates the traversal within the container.
+## move semantics only help if a class has data-owning pointer data members
+    This is not true.
+    Move semantics can also be beneficial for classes that manage other kinds of resources, or classes with members that themselves benefit from move semantics.
+## The member function "template <typename T> void Class::function(T&& t) { f(t); member_save_t_ = std::move(t); }" uses std::move() properly?
+    This is not necessarily true.
+    After f(t**, t may be in a moved-from state, and moving from it again into member_save_t_ may not be safe or meaningful. It depends on the specifics of the type T and the function f.
+## Sigaction-installed async signal handlers shouldn't write any output - directly or indirectly - using printf, std::cout or std::cerr ?
+    This is true.
+    The functions printf, std::cout, and std::cerr are not async-signal-safe. Using them in a signal handler can result in undefined behavior.
 
 # Question: When hashing data that hasn't been deliberately engineered to create collisions, using a crptographic strength hash function - instead of your standard library's- could never-the-less be useful to reduce the risk of excessive collisions when:
 Pick ONE OR MORE options
-* the hash table load factor will be very low
-* the keys tend to be incrementing integers, but there may be small gaps every now and then
-* the keys are randomly generated
-* you don't know anything about the keys
-* the keys are properly aligned double*s, your std::hash implementation uses an identity hash and std::unordered_* containers use prime-number bucket counts
+* The hash table load factor will be very low
+* The keys tend to be incrementing integers, but there may be small gaps every now and then
+* The keys are randomly generated
+* You don't know anything about the keys
+* The keys are properly aligned double*s, your std::hash implementation uses an identity hash and std::unordered_* containers use prime-number bucket counts
 ## Solution:
-Here are the scenarios where using a cryptographic strength hash function could be useful to reduce the risk of excessive collisions:
+The question is asking about the benefits of using a strong, secure type of hash function (like those used in cryptography) for organizing data into a hash table, which is a type of data structure.
+A hash function is like a formula that takes input (like a password or a file) and gives back a fixed-size string of characters, which is typically a sequence of numbers and letters. This output is called a hash.
 
-* The keys are randomly generated:
-Cryptographic hash functions are designed to distribute keys uniformly across the hash space, even for randomly generated keys. This can help reduce collisions.
+In simple terms, the question wants to know: **When would it be a good idea to use a more complex and secure hash function to reduce the chance of different inputs having the same hash (called collisions)?**
+It's asking this for situations where the data isn't being manipulated on purpose to cause these collisions.
 
-* You don’t know anything about the keys:
-If you don’t know anything about the distribution of your keys, a cryptographic hash function can help ensure a uniform distribution of keys in the hash space, reducing the likelihood of collisions.
+The options given are different scenarios where data is being stored and you have to decide if using a cryptographic hash function would help avoid too many collisions in those cases.
+The question suggests that even if you're not expecting someone to try and cause collisions, there might still be good reasons to use a stronger hash function.
 
-* The keys are properly aligned doubles, your std::hash implementation uses an identity hash and std::unordered_ containers use prime-number bucket counts:
-In this case, if the keys are close together, they may end up in the same bucket with an identity hash function. A cryptographic hash function can help distribute these keys more evenly across the buckets.
+Using a cryptographic strength hash function can be useful in several scenarios to reduce the risk of excessive collisions:
 
+- **When you don't know anything about the keys**: **YES**
+  Without specific knowledge about the key distribution, it's difficult to definitively say whether a cryptographic hash function would be advantageous.
+  It might help in some cases, but the potential benefits need to be weighed against the added complexity.
+  Although cryptographic hash functions are designed to handle arbitrary input and still distribute hashes uniformly, which is beneficial when the nature of the keys is unknown.
+
+- **When the keys are randomly generated**: **NO(MAYBE)**
+  Ideally, good quality random number generators should produce keys that are already well-distributed, minimizing the risk of collisions.
+  In this case, a standard library hash function designed for efficient hashing might be sufficient.
+  Although randomly generated keys can benefit from the unpredictability of cryptographic hash functions, ensuring a more uniform distribution across the hash table.
+
+- **When the keys tend to be incrementing integers, but there may be small gaps every now and then**: **YES**
+    A cryptographic hash function can help avoid clustering that might occur with simple hashing methods, especially when there are irregularities in the key sequence.
+
+- **When the hash table load factor will be very low**: **NO**
+  A low load factor already reduces the probability of collisions regardless of the hash function used.
+  In this situation, the additional complexity of a cryptographic hash function might not be justified.
+  Although using a cryptographic hash function can further minimize this risk, especially in a sparsely populated hash table.
+
+- **When the keys are properly aligned doubles, your std::hash implementation uses an identity hash and std::unordered_ containers use prime-number bucket counts**: **NO**
+    If the standard library hash function is already well-suited for the specific key type (properly aligned doubles) and the container implementation uses prime-numbered bucket counts
+    (which are good for collision distribution), there might not be a significant benefit from using a cryptographic hash function in this particular scenario.
+    Although in this specific case, the identity hash function could lead to poor distribution since it's essentially returning the key itself as the hash.
+    A cryptographic hash function would provide a more complex mapping, ensuring a better distribution even with prime-number bucket counts.
+
+In general, cryptographic hash functions are a good choice when you require a high assurance of the hash function's ability to avoid collisions, regardless of the input data characteristics.
+They are particularly useful when security is a concern, as they are resistant to collision attacks where an adversary might try to create deliberate collisions.
+
+**Key Points:**
+* Cryptographic hash functions offer better collision resistance compared to some standard library hash functions, but they come with the trade-off of being computationally more expensive.
+* The decision of whether to use a cryptographic hash function depends on the specific characteristics of your data, the expected load factor, and the performance requirements of your application.
+* If you're unsure, it's often advisable to start with a good standard library hash function and measure the actual collision rate in your application before switching to a cryptographic hash function.
 ### The other options are not generally reasons to use a cryptographic hash function:
 
 * The hash table load factor will be very low:
@@ -322,65 +338,130 @@ If the keys are incrementing integers, even with small gaps, they are likely to 
 A cryptographic hash function is unlikely to provide significant benefits in this case.
 
 # Question: select the code below having or risking unspecified or undefined behaviour.
-Pick ONE OR MORE options
-```c++
-* void f(int& n) { *reinterpret_cast<unsigned*>(&n) /= 2; }
-
-* double d; d = 2.13; std::cout << *reinterpret_cast<uint64_t*>(&d);
-
-* auto f(int n) { auto result = 3983 / (n + 1); return -result; }
-
-* const char* p = "lex"; auto h = hash32(p[0], p[1], p[2], p[3]); // hash32 safe with any 4 char values
-
-* char* p = (char*)malloc(6); realloc(p, 10); strncpy(p, "hello", sizeof "hello");
-```
+  Pick ONE OR MORE options
+  ```c++
+  * void f(int& n) { *reinterpret_cast<unsigned*>(&n) /= 2; }
+  * double d; d = 2.13; std::cout << *reinterpret_cast<uint64_t*>(&d);
+  * auto f(int n) { auto result = 3983 / (n + 1); return -result; }
+  * const char* p = "lex"; auto h = hash32(p[0], p[1], p[2], p[3]); // hash32 safe with any 4 char values
+  * char* p = (char*)malloc(6); realloc(p, 10); strncpy(p, "hello", sizeof "hello");
+  ```
 ## Solutions:
-Here are the code snippets that have or risk unspecified or undefined behavior:
+  Here are the code snippets that have or risk unspecified or undefined behavior:
+
 ### Risk unspecified or undefined behavior.
-* void f(int& n) { reinterpret_cast<unsigned>(&n) /= 2; }:
-This code is risky because it uses reinterpret_cast to cast an int pointer to an unsigned pointer. This can lead to undefined behavior if the sizes of int and unsigned are not the same.
+  * void f(int& n) { reinterpret_cast<unsigned>(&n) /= 2; }:
+    This code is risky because it uses reinterpret_cast to cast an int pointer to an unsigned pointer.
+    This can lead to undefined behavior if the sizes of int and unsigned are not the same.
 
-* double d; d = 2.13; std::cout << reinterpret_cast<uint64_t>(&d);:
-This code is risky because it uses reinterpret_cast to cast a double pointer to a uint64_t pointer. This can lead to undefined behavior because the binary representations of double and uint64_t are different.
+  * double d; d = 2.13; std::cout << reinterpret_cast<uint64_t>(&d);:
+    This code is risky because it uses reinterpret_cast to cast a double pointer to a uint64_t pointer. This can lead to undefined behavior because the binary representations of double and uint64_t are different.
 
-* const char p = “lex”; auto h = hash32(p[0], p[1], p[2], p[3]); // hash32 safe with any 4 char values*:
-This code risks undefined behavior because it accesses p[3], which is beyond the end of the string “lex”. The comment suggests that hash32 is safe with any 4 char values, but “lex” only provides 3 characters.
+  * const char p = “lex”; auto h = hash32(p[0], p[1], p[2], p[3]); // hash32 safe with any 4 char values*:
+    This code risks undefined behavior because it accesses p[3], which is beyond the end of the string “lex”. The comment suggests that hash32 is safe with any 4 char values, but “lex” only provides 3 characters.
 
-* char p = (char)malloc(6); realloc(p, 10); strncpy(p, “hello”, sizeof “hello”);**:
-This code has undefined behavior because it doesn’t update p after reallocating memory. After realloc(p, 10), p may be a dangling pointer if realloc moved the memory block. The subsequent strncpy(p, "hello", sizeof "hello"); then risks undefined behavior.
+  * char p = (char)malloc(6); realloc(p, 10); strncpy(p, “hello”, sizeof “hello”);**:
+    This code has undefined behavior because it doesn’t update p after reallocating memory. After realloc(p, 10), p may be a dangling pointer if realloc moved the memory block. The subsequent strncpy(p, "hello", sizeof "hello"); then risks undefined behavior.
 
 ### No risk unspecified or undefined behavior.
-auto f(int n) { auto result = 3983 / (n + 1); return -result; }:
-does not have or risk unspecified or undefined behavior, assuming that n is not equal to -1.
+  * auto f(int n) { auto result = 3983 / (n + 1); return -result; }:
+    does not have or risk unspecified or undefined behavior, assuming that n is not equal to -1.
 
 # Question: TheGauge - untrusted TCP client
-Your TCP server accepted a connection from an untrusted TCP client, and is now - per the protocol it uses - expecting a 3000-byte message. On the accepted client socket, which is in blocking mode, it reads into a memory-page sized buffer using read (client_fd, my_4096_byte_buffer, sizeof my 4096_byte_buffer). Select all the true statements below:
-Pick ONE OR MORE options
-* The read call returning 1..2999 bytes would indicate that the client deliberately sent an incomplete message.
-* The read call will either return a value indicating disconnection, or wait until it has read a complete 3000-byte message, so the client can't engineer a situation where read returns a value in the 1..2999 range.
-* You could have to call read up to 3000 times to receive the entire message required by the protocol.
-* The read call could return a value between 3001 and 4096, in which case the first 3000 bytes should be parsed as the expected message, and the remainder should be considered part or all of subsequent message(s).
-* If the read call returns 4096, the client must be trying to flood the server with data as part of a denial of service attack.
+  Your TCP server accepted a connection from an untrusted TCP client, and is now - per the protocol it uses - expecting a 3000-byte message.
+  On the accepted client socket, which is in blocking mode, it reads into a memory-page sized buffer using read (client_fd, my_4096_byte_buffer, sizeof my 4096_byte_buffer).
+  Select all the true statements below:
+  Pick ONE OR MORE options
+  * The read call returning 1..2999 bytes would indicate that the client deliberately sent an incomplete message.
+  * The read call will either return a value indicating disconnection, or wait until it has read a complete 3000-byte message, so the client can't engineer a situation where read returns a value in the 1..2999 range.
+  * You could have to call read up to 3000 times to receive the entire message required by the protocol.
+  * The read call could return a value between 3001 and 4096, in which case the first 3000 bytes should be parsed as the expected message, and the remainder should be considered part or all of subsequent message(s).
+  * If the read call returns 4096, the client must be trying to flood the server with data as part of a denial of service attack.
 ## Solution:
+**Expecting a 3000-byte message**:
+  This means that the server is designed to receive a message that is exactly 3000 bytes long.
+  It could be a single message or a protocol that dictates that every message should be 3000 bytes.
+  If messages are not exactly this length, the server might need to handle incomplete or multiple messages accordingly.
+
+**Memory-page sized buffer**:
+  Operating systems manage memory in units called "pages."
+  A memory-page sized buffer refers to a buffer that is the same size as a memory page, which is typically a power of 2, like 4KB (4096 bytes).
+  This size can be efficient for system memory management and can align with the underlying hardware architecture.
+
 ### Here are the true statements from your options:
 
-* You could have to call read up to 3000 times to receive the entire message required by the protocol: This is true.
-The read function may not return all the requested data in one call, especially if the data is arriving over a network.
-You may need to call read multiple times to get all the data.
+#### You could have to call read up to 3000 times to receive the entire message required by the protocol:
+  This is true.
+  The read function may not return all the requested data in one call, especially if the data is arriving over a network.
+  You may need to call read multiple times to get all the data.
+  The `read` function may require multiple calls to receive a complete message of 3000 bytes due to the nature of TCP and how data is transmitted over a network.
+  TCP is a stream-oriented protocol, which means that the data is sent as a continuous stream of bytes.
+  It doesn't maintain message boundaries, so it's up to the application to reassemble the messages correctly.
+
+  When you call `read`, it will return as much data as is currently available in the socket's receive buffer, up to the specified size.
+  This amount can be less than the requested size for several reasons:
+
+  - **Network Packet Size**:
+    Network protocols like IP divide data into smaller packets that are sent over the network.
+    The size of these packets can vary and is often much smaller than the size of your read buffer.
+
+  - **TCP Windowing**:
+    TCP uses a windowing mechanism to control the flow of data.
+    The sender can only send a certain amount of data before it must wait for an acknowledgment from the receiver.
+    This can affect how much data is available to read at any given time.
+
+  - **Network Latency and Throughput**:
+    The speed and latency of the network can affect how quickly data arrives at the receiving end.
+    If data is arriving slowly, the `read` call may return with only a portion of the expected data.
+
+  - **Buffering**:
+    Both the operating system and network hardware have buffers.
+    Data may be delayed in these buffers and not immediately available to your application.
+
+  It does not necessarily mean that you are receiving one byte per packet, but rather that you are receiving up to the amount of data that has been buffered by the operating system from the incoming packets.
+  You may receive anywhere from 1 byte to the full size of your buffer in a single `read` call.
+
+  To handle this, you should implement a loop that continues to call `read` until you have received the full 3000 bytes.
+  You'll need to keep track of the total number of bytes read and only request the remaining number of bytes on subsequent calls.
+  Here's a simplified example:
+
+  ```cpp
+  char buffer[3000];
+  ssize_t total_bytes_read = 0;
+  ssize_t bytes_read;
+
+  while (total_bytes_read < 3000) {
+      bytes_read = read(client_fd, buffer + total_bytes_read, 3000 - total_bytes_read);
+      if (bytes_read > 0) {
+          total_bytes_read += bytes_read;
+      } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+          // No data available right now, try again later
+      } else {
+          // An error occurred
+          break;
+      }
+  }
+  ```
+
+  In this loop, `read` is called repeatedly until the total number of bytes read equals 3000, which is the size of the expected message.
 
 ### The other statements are not generally true:
 
-* The read call returning 1…2999 bytes would indicate that the client deliberately sent an incomplete message: This is not necessarily true.
-The read function may return fewer bytes than requested for various reasons, such as if the data is still being transmitted over the network.
+  * The read call returning 1…2999 bytes would indicate that the client deliberately sent an incomplete message:
+    This is not necessarily true.
+    The read function may return fewer bytes than requested for various reasons, such as if the data is still being transmitted over the network.
 
-* The read call will either return a value indicating disconnection, or wait until it has read a complete 3000-byte message, so the client can’t engineer a situation where read returns a value in the 1…2999 range: This is not true.
-The read function can return any number of bytes up to the number requested, depending on how much data is available.
+  * The read call will either return a value indicating disconnection, or wait until it has read a complete 3000-byte message, so the client can’t engineer a situation where read returns a value in the 1…2999 range:
+    This is not true.
+    The read function can return any number of bytes up to the number requested, depending on how much data is available.
 
-* The read call could return a value between 3001 and 4096, in which case the first 3000 bytes should be parsed as the expected message, and the remainder should be considered part or all of subsequent message(s): This is not true.
-The read function will not return more bytes than requested. If you request 3000 bytes, it will not return 3001 or more bytes.
+  * The read call could return a value between 3001 and 4096, in which case the first 3000 bytes should be parsed as the expected message, and the remainder should be considered part or all of subsequent message(s):
+    This is not true.
+    The read function will not return more bytes than requested. If you request 3000 bytes, it will not return 3001 or more bytes.
 
-* If the read call returns 4096, the client must be trying to flood the server with data as part of a denial of service attack: This is not necessarily true.
-The read function returning a large number of bytes simply means that a lot of data was available to be read. It does not necessarily indicate a denial of service attack.
+  * If the read call returns 4096, the client must be trying to flood the server with data as part of a denial of service attack:
+    This is not necessarily true.
+    The read function returning a large number of bytes simply means that a lot of data was available to be read. It does not necessarily indicate a denial of service attack.
 
 # Question: TheGauge - big-O blanks
 Complete the blanks in the following question with the appropriate answer.
