@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/ppatoria/dev/interview/average_price/build",
-  "command": "g++   -g -std=gnu++20 -o CMakeFiles/average_price.dir/average_price.cpp.o -c /home/ppatoria/dev/interview/average_price/average_price.cpp",
-  "file": "/home/ppatoria/dev/interview/average_price/average_price.cpp"
-}
-]

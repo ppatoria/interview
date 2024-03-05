@@ -1,3 +1,0 @@
-/home/ppatoria/dev/interview/average_price/build/CMakeFiles/average_price.dir
-/home/ppatoria/dev/interview/average_price/build/CMakeFiles/edit_cache.dir
-/home/ppatoria/dev/interview/average_price/build/CMakeFiles/rebuild_cache.dir
