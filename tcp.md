@@ -423,7 +423,9 @@ Here's a comparison table to illustrate the differences:
 | **Concurrency**     | Concurrency is managed by the application, which must handle the execution of callbacks without blocking the main thread.    | Concurrency is managed by the kernel, which can handle multiple I/O operations simultaneously.                               |
 | **Use Case**        | Suitable for applications that need fine-grained control over I/O operations and can handle them within the main event loop. | Ideal for applications that require high I/O throughput and want to offload the I/O handling to the kernel.                  |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-In summary, **Non-Blocking I/O with Callbacks** is often used in the context of an event-driven architecture where an event loop runs in the application's thread, while **AIO** is a lower-level mechanism where the kernel is responsible for managing the I/O operations.👨‍💻
+
+In summary, **Non-Blocking I/O with Callbacks** is often used in the context of an event-driven architecture where an event loop runs in the application's thread, while **AIO** is a lower-level mechanism where the kernel is responsible for managing the I/O operations.
+
 ### Coroutines (C++20):
    - **What**: It's like reading a book and using a bookmark to remember where you stopped.
    - **How**: You write code that can pause at certain points and resume later.

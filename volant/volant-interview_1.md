@@ -492,14 +492,18 @@ When a vector is at capacity and an element is pushed back, the vector typically
 - std::unordered_map::begin() + 1 in a container where most elements have already been erased is O( 1 ):
 Incrementing an iterator is a constant time operation.
 
-- Finding the number of squares a knight could potentially reach in its next two moves on a N*N chess board (each knight move is 2 squares left, right, up, or down, then 1 square perpendicular to that initial movement) is O( 1 ):
+    - Finding the number of squares a knight could potentially reach in its next two moves on a N*N chess board (each knight move is 2 squares left, right, up, or down, then 1 square perpendicular to that initial movement) is O( 1 ):
 The number of squares a knight can reach in two moves does not depend on the size of the board (as long as it’s at least 5x5), so this is a constant time operation.
 
 # Question: Average Prices
 * **SCENARIO**
 The four space-separated message formats below describe the placement, modifying, and trading (i.e. "fill"ing) of orders at a securities exchange throughout the day:
-new <order-id> <security> <buy sell> <quantity> <price> modify <order-id-from-new> <order-id> <quantity> <price> modify <order-id-from-earlier- modify> <order-id> <quantity> <price>
-fill <order-id> <quantity> <price>
+new                                    <order-id> <security> <buy sell> <quantity> <price>
+modify <order-id-from-new>             <order-id>                       <quantity> <price>
+modify <order-id-from-earlier- modify> <order-id>                       <quantity> <price>
+fill                                   <order-id>                       <quantity> <price>
+
+
 * **Terminology:**
 	* A chain (of orders) refers to a "new" order message, followed by 0 or more "modify"s, each referencing the previous message in the chain by order id. (Example below.)
 	* The volume-weighted average price ("vwap") of one or more fill messages is the total money exchanged divided by the total number of shares exchanged.
@@ -518,11 +522,9 @@ fill <order-id> <quantity> <price>
 	* <vwap> is the volume weighted average price (see example below) for the "fill"s on that chain of orders rounded down (or 0.00 if there are no fills).
 * **EXAMPLE**
 If you glance over the following messages (you don't need to consider all the naunces)...
-	* **new 1 IBM buy 20 1250.00 order-id 1:**
-	someone wants to buy 20 shares of IBM for <= $1250.00
+	* **new 1 IBM buy 20 1250.00 order-id 1:**	someone wants to buy 20 shares of IBM for <= $1250.00
 
-	* **modify 1 2 15 1240.00**
-	they decided 15 shares is enough, and only want to pay <= $1240.00 new 3 IBM buy 40 1245.00
+	* **modify 1 2 15 1240.00**	they decided 15 shares is enough, and only want to pay <= $1240.00 new 3 IBM buy 40 1245.00
 
 	* **order-id 3: a distinct order to buy 40 shares of IBM for <= $1245.00**
 
@@ -530,17 +532,13 @@ If you glance over the following messages (you don't need to consider all the na
 
 	* **modify 2 4 15 1250.00**
 
-	* **fill 2 5 1240.00**
-	the original trader bought 5 shares for $1240.00 each
+	* **fill 2 5 1240.00**	the original trader bought 5 shares for $1240.00 each
 
-	* **fill 3 40 1243.00**
-	order 3 above got all 40 shares for $1243.00 each
+	* **fill 3 40 1243.00**	order 3 above got all 40 shares for $1243.00 each
 
-	* **modify 4 5 15 1240.00**
-	The original trader wants to put the price back down now there's no competition to buy
+	* **modify 4 5 15 1240.00**	The original trader wants to put the price back down now there's no competition to buy
 
-	* **fill 4 5 1250.00**
-	but before that took effect they'd already bought 5 at the higher price of $1250.00
+	* **fill 4 5 1250.00**	but before that took effect they'd already bought 5 at the higher price of $1250.00
 
 	* **modify 5 6 20 1240.00**
 	...there is a chain that includes order- ids 1, 2, 4, 5 and 6.
@@ -643,3 +641,4 @@ After processing all the messages, it calculates the volume-weighted average pri
 The time complexity is O(n), where n is the number of messages.
 
 
+    
