@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <iostream>
+#include <optional>
 
 using namespace std;
 
@@ -76,7 +77,7 @@ public:
 
     void erase(const std::string& orderid) {
         if (orderLookup.count(orderid)) {
-            std::visit(& { it->second.erase(it->first); }, orderLookup[orderid]);
+          std::visit([&] (auto it){ it->second.erase(it->first); }, orderLookup[orderid]);
             orderLookup.erase(orderid);
         }
     }
