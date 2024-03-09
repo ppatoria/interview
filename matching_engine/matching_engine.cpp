@@ -116,14 +116,10 @@ public:
      * be ignored.
      */
     template <typename OrderSet>
-    void safeInsert(OrderSet& orderSet, const Order& order)
+    void actualInsert(OrderSet& orderSet, const Order& order)
     {
-        auto result = orderSet.insert(order);
-        if (result.second) {
-            visit([&](auto it) { it = result.first; }, orderLookup[order.id]);
-        } else {
-            throw runtime_error("Order with id: [" + result.first->id + "] already exists.");
-        }
+        auto iter = orderSet.insert(order);
+        visit([&](auto it) { it = iter; }, orderLookup[order.id]);
     }
 
     template <typename T>
@@ -135,9 +131,9 @@ public:
         }
 
         if (order.side == Side::BUY) {
-            safeInsert(buyOrders, order);
+            actualInsert(buyOrders, order);
         } else if (order.side == Side::SELL) {
-            safeInsert(sellOrders, order);
+            actualInsert(sellOrders, order);
         } else {
             cout << "Ignoring invalid Order: " << order << endl; // log as error and continue.
         }
@@ -206,35 +202,23 @@ private:
      * correspondingly the price for BUY section must also be decreasing order.
      */
 
-    using OrderComparer = function<bool(const Order&, const Order&)>;
+    function<bool(const Order&, const Order&)> sellOrderComparer = [](const Order& lhs, const Order& rhs) {
+        return lhs.price < rhs.price;
+    };
+    function<bool(const Order&, const Order&)> buyOrderComparer = [](const Order& lhs, const Order& rhs) {
+        return lhs.price > rhs.price;
+    };
 
-    OrderComparer orderIDComparer =
-        [](const Order& lhs, const Order& rhs) {
-            return lhs.id == rhs.id;
-        };
-    OrderComparer priceLessThanComparer =
-        [&](const Order& lhs, const Order& rhs) {
-            if (!orderIDComparer(lhs, rhs))
-                return false;
-            return lhs.price < rhs.price;
-        };
-    OrderComparer priceGreaterThanComparer =
-        [&](const Order& lhs, const Order& rhs) {
-            if (!orderIDComparer(lhs, rhs))
-                return false;
-            return lhs.price > rhs.price;
-        };
-
-    using SellOrderSet = std::set<Order, decltype(priceLessThanComparer)>;
-    using BuyOrderSet = std::set<Order, decltype(priceGreaterThanComparer)>;
+    using SellOrderSet = std::multiset<Order, decltype(sellOrderComparer)>;
+    using BuyOrderSet = std::multiset<Order, decltype(buyOrderComparer)>;
 
     using SellOrderIterator = SellOrderSet::iterator;
     using BuyOrderIterator = BuyOrderSet::iterator;
 
     using OrderIterator = std::variant<SellOrderIterator, BuyOrderIterator>;
 
-    SellOrderSet sellOrders;
-    BuyOrderSet buyOrders;
+    SellOrderSet sellOrders { sellOrderComparer };
+    BuyOrderSet buyOrders { buyOrderComparer };
     std::unordered_map<std::string, OrderIterator> orderLookup;
 };
 
