@@ -46,6 +46,14 @@ struct Order{
     uint64_t qty;
     OrderType type;
     Side side;
+    friend std::ostream &operator<<(std::ostream &os, const Order &order) {
+        os << order.id << "\t"
+           << order.price << "\t"
+           << order.qty << "\t"
+           << (order.type == OrderType::GFD ? "GFD" : "IOC") << "\t"
+           << (order.side == Side::BUY ? "BUY" : "SELL") << "\n";
+      return os;
+    }
 };
 
 struct CancelOrder{
@@ -63,29 +71,52 @@ using OrderRequest = variant<Order, CancelOrder, ModifyOrder>;
 
 struct Orders {
 public:
-    template<typename T>
-    void insert(const T& order) {
+
+    template<typename OrderSet>
+    void safeInsert(OrderSet& orderSet, const Order& order ){
+      auto result = orderSet.insert(order);
+      if (result.second) {
+          visit([&](auto it){it = result.first;}, orderLookup[order.id]);
+      } else {
+          throw std::runtime_error("Order with id: [" + result.first->id + "] already exists");
+      }
+    }
+
+    template <typename T>
+    void insert(const T &order) {
         if (orderLookup.count(order.id)) {
             throw std::runtime_error("Order id already exists: " + order.id);
         }
+
         if (order.side == Side::BUY) {
-            orderLookup[order.id] = buyOrders.insert(order);
-        } else {
-            orderLookup[order.id] = sellOrders.insert(order);
+            safeInsert(buyOrders, order);
+        } else if(order.side == Side::SELL){
+            safeInsert(sellOrders, order);
+        }else{
+            cout << "Ignoring invalid Order: " << order << endl; //log as error and continue.
         }
     }
 
     void erase(const std::string& orderid) {
-        if (orderLookup.count(orderid)) {
-          std::visit([&] (auto it){ it->second.erase(it->first); }, orderLookup[orderid]);
-            orderLookup.erase(orderid);
+        if (contains(orderid)) {
+          std::visit(
+              [&](auto it) {
+                if constexpr (std::is_same_v<decltype(it), SellOrderIterator>) {
+                    sellOrders.erase(*it);
+                } else if constexpr (std::is_same_v<decltype(it), BuyOrderIterator>) {
+                    buyOrders.erase(*it);
+                }
+              },
+              orderLookup[orderid]);
+          orderLookup.erase(orderid);
         }
     }
 
-    std::optional<Order> get(const std::string& orderid) {
-        if(orderLookup.count(orderid))
-            return *std::visit( { return &(*it); }, orderLookup[orderid]);
-        return std::nullopt;
+    std::optional<Order> get(const std::string &orderid) {
+
+      if (contains(orderid))
+        return visit([&](auto it) -> Order { return *it; }, orderLookup[orderid]);
+      return nullopt;
     }
 
     bool contains(const std::string& orderid) {
@@ -106,6 +137,7 @@ public:
         return os;
     }
 
+
 private:
     function<bool(const Order &, const Order &)> sellOrderComparer =
         [](const Order &lhs, const Order &rhs) {
@@ -116,8 +148,8 @@ private:
           return lhs.price > rhs.price;
         };
 
-    using SellOrderSet = std::multiset<Order, decltype(sellOrderComparer)>;
-    using BuyOrderSet  = std::multiset<Order, decltype(buyOrderComparer)>;
+    using SellOrderSet = std::set<Order, decltype(sellOrderComparer)>;
+    using BuyOrderSet  = std::set<Order, decltype(buyOrderComparer)>;
 
     using SellOrderIterator = SellOrderSet::iterator;
     using BuyOrderIterator  = BuyOrderSet::iterator;
@@ -141,14 +173,19 @@ struct OrderProcessor {
     }
 
     void operator()(ModifyOrder& modifyOrder) {
-        if (orders.contains(modifyOrder.id)) {
-            Order existingOrder = orders.get(modifyOrder.id);
-            orders.erase(modifyOrder.id);
-            existingOrder.price = modifyOrder.price;
-            existingOrder.qty = modifyOrder.qty;
-            existingOrder.side = modifyOrder.side;
-            orders.insert(existingOrder);
-        }
+
+      auto mayBeOrder = orders.get(modifyOrder.id);
+
+      if(!mayBeOrder.has_value()) {
+        throw std::runtime_error("Not able to get order with orderid: " + modifyOrder.id + " from Orders." );
+      }
+
+      orders.erase(modifyOrder.id);
+      auto& existingOrder = mayBeOrder.value();
+      existingOrder.price = modifyOrder.price;
+      existingOrder.qty = modifyOrder.qty;
+      existingOrder.side = modifyOrder.side;
+      orders.insert(existingOrder);
     }
 };
 
@@ -175,7 +212,8 @@ int main() {
             orderRequest = modifyOrder;
         }
         std::visit( OrderProcessor(), orderRequest );
-
+        cout << orders << endl;
     }
+    cout << orders << endl;
     return 0;
 }
