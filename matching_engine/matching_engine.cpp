@@ -51,6 +51,14 @@ struct ModifyOrder {
     uint64_t price;
     uint64_t qty;
     Side side;
+    friend std::ostream& operator<<(std::ostream& os, const ModifyOrder& order)
+    {
+        os << order.id << "\t"
+           << order.price << "\t"
+           << order.qty << "\t"
+           << (order.side == Side::BUY ? "BUY" : "SELL") << "\n";
+        return os;
+    }
 };
 
 /**
@@ -93,8 +101,12 @@ bool isValid(const T& order)
  */
 bool isModifiable(const Order& order)
 {
-    return order.type == OrderType::IOC;
-};
+    if (order.type == OrderType::GFD) {
+        cout << "WARN:  Order : " << order << " with OrderType:GFD cannot be modified." << endl;
+        return false;
+    }
+    return true;
+}
 
 using OrderRequest = variant<Order, CancelOrder, ModifyOrder>;
 /**
@@ -156,16 +168,10 @@ public:
         }
     }
 
-    std::optional<Order> get(const std::string& orderid)
+    const Order& at(const std::string& orderid)
     {
-        if (contains(orderid)) {
-            return visit(
-                [&](auto it) -> Order {
-                    return *it;
-                },
-                orderLookup[orderid]);
-        }
-        return nullopt;
+        auto iter = visit([&](auto it) { return it; }, orderLookup[orderid]);
+        return *iter;
     }
 
     bool contains(const std::string& orderid)
@@ -246,28 +252,31 @@ struct OrderProcessor {
         }
     }
 
-    void operator()(ModifyOrder& modifyOrder)
+    void operator()(ModifyOrder& modifyRequest)
     {
-        if (!isValid(modifyOrder)) {
+        if (!isValid(modifyRequest)) {
             return;
         };
 
-        auto mayBeOrder = orders.get(modifyOrder.id);
-
-        if (!mayBeOrder.has_value()) {
-            throw std::runtime_error("Not able to get order with orderid: " + modifyOrder.id + " from Orders.");
+        if (!orders.contains(modifyRequest.id)) {
+            std::cout << "WARN: Not able to find in the Order Book. Ignoring [" << modifyRequest << "]" << endl;
+            return;
         }
 
-        auto& existingOrder = mayBeOrder.value();
+        const auto& existingOrder = orders.at(modifyRequest.id);
+
         if (!isModifiable(existingOrder)) {
+            std::cout << "WARN: Order can't be modified. Ignoring [" << modifyRequest << "]" << endl;
             return;
         };
+        Order modifiedOrder(existingOrder);
 
-        orders.erase(modifyOrder.id);
-        existingOrder.price = modifyOrder.price;
-        existingOrder.qty = modifyOrder.qty;
-        existingOrder.side = modifyOrder.side;
-        orders.insert(existingOrder);
+        modifiedOrder.price = modifyRequest.price;
+        modifiedOrder.qty = modifyRequest.qty;
+        modifiedOrder.side = modifyRequest.side;
+
+        orders.erase(existingOrder.id);
+        orders.insert(modifiedOrder);
     }
 };
 
