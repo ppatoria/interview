@@ -206,23 +206,35 @@ private:
      * correspondingly the price for BUY section must also be decreasing order.
      */
 
-    function<bool(const Order&, const Order&)> sellOrderComparer = [](const Order& lhs, const Order& rhs) {
-        return lhs.price < rhs.price;
-    };
-    function<bool(const Order&, const Order&)> buyOrderComparer = [](const Order& lhs, const Order& rhs) {
-        return lhs.price > rhs.price;
-    };
+    using OrderComparer = function<bool(const Order&, const Order&)>;
 
-    using SellOrderSet = std::set<Order, decltype(sellOrderComparer)>;
-    using BuyOrderSet = std::set<Order, decltype(buyOrderComparer)>;
+    OrderComparer orderIDComparer =
+        [](const Order& lhs, const Order& rhs) {
+            return lhs.id == rhs.id;
+        };
+    OrderComparer priceLessThanComparer =
+        [&](const Order& lhs, const Order& rhs) {
+            if (!orderIDComparer(lhs, rhs))
+                return false;
+            return lhs.price < rhs.price;
+        };
+    OrderComparer priceGreaterThanComparer =
+        [&](const Order& lhs, const Order& rhs) {
+            if (!orderIDComparer(lhs, rhs))
+                return false;
+            return lhs.price > rhs.price;
+        };
+
+    using SellOrderSet = std::set<Order, decltype(priceLessThanComparer)>;
+    using BuyOrderSet = std::set<Order, decltype(priceGreaterThanComparer)>;
 
     using SellOrderIterator = SellOrderSet::iterator;
     using BuyOrderIterator = BuyOrderSet::iterator;
 
     using OrderIterator = std::variant<SellOrderIterator, BuyOrderIterator>;
 
-    SellOrderSet sellOrders { sellOrderComparer };
-    BuyOrderSet buyOrders { buyOrderComparer };
+    SellOrderSet sellOrders;
+    BuyOrderSet buyOrders;
     std::unordered_map<std::string, OrderIterator> orderLookup;
 };
 
