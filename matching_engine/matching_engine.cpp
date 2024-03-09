@@ -73,11 +73,6 @@ concept HasID = requires(T order)
     order.id;
 };
 
-bool isModifiable(const Order& order)
-{
-    return order.type == OrderType::IOC;
-};
-
 template <typename T>
 concept HasOnlyID = HasID<T> && !HasPriceAndQty<T>;
 
@@ -93,6 +88,14 @@ bool isValid(const T& order)
     return !order.id.empty();
 }
 
+/**
+ * NOTE : We cannot modify an IOC order type, as will be explained later.
+ */
+bool isModifiable(const Order& order)
+{
+    return order.type == OrderType::IOC;
+};
+
 using OrderRequest = variant<Order, CancelOrder, ModifyOrder>;
 /**
  *NOTE:
@@ -101,8 +104,6 @@ using OrderRequest = variant<Order, CancelOrder, ModifyOrder>;
  * it will be cancelled right away.
  * If it is only partially traded, the non-traded part is cancelled.
  *
- * Simply put orders that are equally priced are traded out in the order they
- * are received at the matching engine.
  *
  * There one more "property" to note of the MODIFY operation.
  * When are order is modified will lose its original priority (place).
@@ -173,12 +174,6 @@ public:
     }
 
     /**
-     * The sequence for order1 and order2 is decided by which order was
-     * processed by the matching engine first.
-     *
-     * The "TRADE order1 price1 qty1 order2 price2 qty2"
-     * message should be output every time a trade
-     * occurs within the the matching engine.**
      */
     friend std::ostream& operator<<(std::ostream& os, const Orders& orders)
     {
@@ -197,9 +192,11 @@ public:
 
 private:
     /**
-     *NOTE:
+     *NOTE Requirement:
      * The price for SELL section must be decreasing (descending) order and
      * correspondingly the price for BUY section must also be decreasing order.
+     *
+     * Comparers as per the above requirement.
      */
 
     function<bool(const Order&, const Order&)> sellOrderComparer = [](const Order& lhs, const Order& rhs) {
@@ -208,6 +205,16 @@ private:
     function<bool(const Order&, const Order&)> buyOrderComparer = [](const Order& lhs, const Order& rhs) {
         return lhs.price > rhs.price;
     };
+
+    /**
+     * NOTE Requirement:
+     * Simply put orders that are equally priced are traded out in the order they are received at the matching engine.
+     * The sequence for order1 and order2 is decided by which order was processed by the matching engine first.
+     * The "TRADE order1 price1 qty1 order2 price2 qty2 message should be output every time a trade occurs within the the matching engine.
+
+     * As per cpprefernce for multiset: "If the container has elements with equivalent key, inserts at the upper bound of that range."
+     * This feature takes care of the above requirement.
+     */
 
     using SellOrderSet = std::multiset<Order, decltype(sellOrderComparer)>;
     using BuyOrderSet = std::multiset<Order, decltype(buyOrderComparer)>;
