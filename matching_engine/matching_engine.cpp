@@ -1,5 +1,6 @@
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -39,9 +40,9 @@ struct Order {
 
 struct PriceLevel {
     double price;
-    std::shared_ptr<Order> firstOrder;
-    std::shared_ptr<Order> lastOrder;
-    std::vector<std::shared_ptr<Order>> orders;
+    shared_ptr<Order> firstOrder;
+    shared_ptr<Order> lastOrder;
+    vector<shared_ptr<Order>> orders;
 
     PriceLevel(double price)
         : price(price)
@@ -52,22 +53,22 @@ struct PriceLevel {
 };
 
 struct OrderBook { // per instrument
-    std::vector<std::shared_ptr<PriceLevel>> bidLevels;
-    std::vector<std::shared_ptr<PriceLevel>> askLevels;
+    vector<shared_ptr<PriceLevel>> bidLevels;
+    vector<shared_ptr<PriceLevel>> askLevels;
 };
 
 struct OrderMetaData {
-    std::shared_ptr<OrderBook> orderBook;
-    std::shared_ptr<PriceLevel> priceLevel;
-    std::shared_ptr<Order> nextOrder;
-    std::shared_ptr<Order> prevOrder;
+    shared_ptr<PriceLevel> priceLevel;
+    shared_ptr<Order> nextOrder;
+    shared_ptr<Order> prevOrder;
 
-    OrderMetaData(std::shared_ptr<OrderBook> orderBook,
+    OrderMetaData() = default;
+
+    OrderMetaData(
         std::shared_ptr<PriceLevel> priceLevel,
         std::shared_ptr<Order> nextOrder = nullptr,
         std::shared_ptr<Order> prevOrder = nullptr)
-        : orderBook(orderBook)
-        , priceLevel(priceLevel)
+        : priceLevel(priceLevel)
         , nextOrder(nextOrder)
         , prevOrder(prevOrder)
     {
@@ -75,40 +76,34 @@ struct OrderMetaData {
 };
 
 std::unordered_map<std::string, OrderMetaData> orderMap;
-std::unordered_map<std::string, std::shared_ptr<OrderBook>> orderBookMap;
+// std::unordered_map<std::string, OrderBook> orderBookMap;
 
-std::shared_ptr<PriceLevel> findPriceLevel(std::shared_ptr<Order> order, std::shared_ptr<OrderBook> orderBook)
+shared_ptr<PriceLevel> getPriceLevel(const Order& order, OrderBook& orderBook)
 {
-    std::vector<std::shared_ptr<PriceLevel>>& levels = (order->side == Side::BUY) ? orderBook->bidLevels : orderBook->askLevels;
-    // Iterate over the price levels from the end of the vector
-    for (auto it = levels.rbegin(); it != levels.rend(); ++it) {
-        if ((*it)->price == order->price) {
-            return *it;
+    auto& levels = (order.side == Side::BUY) ? orderBook.bidLevels : orderBook.askLevels;
+
+    auto it = std::find_if( // Iterate over the price levels from the end of the vector
+        levels.rbegin(), levels.rend(), [&order](auto& level) {
+            return level->price == order.price;
+        });
+
+    if (it == levels.rend()) {
+        auto newPriceLevel = make_shared<PriceLevel>(order.price);
+        if (order.side == Side::BUY) {
+            orderBook.bidLevels.push_back(newPriceLevel);
+        } else {
+            orderBook.askLevels.push_back(newPriceLevel);
         }
+        return newPriceLevel;
     }
-    return nullptr;
+    return *it;
 }
 
-void insert(std::shared_ptr<Order> order)
+void insert(shared_ptr<Order> order, OrderBook& orderBook)
 {
-    auto it = orderBookMap.find(order->id);
-    if (it == orderBookMap.end()) {
-        throw runtime_error("OrderBook not found for order " + order->id);
-    }
-    std::shared_ptr<OrderBook> orderBook = it->second;
+    auto priceLevel = getPriceLevel(*order, orderBook);
 
-    std::shared_ptr<PriceLevel> priceLevel = findPriceLevel(order, orderBook);
-
-    if (!priceLevel) {
-        priceLevel = std::make_shared<PriceLevel>(order->price);
-        if (order->side == Side::BUY) {
-            orderBook->bidLevels.push_back(priceLevel);
-        } else {
-            orderBook->askLevels.push_back(priceLevel);
-        }
-    }
-
-    OrderMetaData metaData(orderBook, priceLevel);
+    OrderMetaData metaData(priceLevel);
     if (!priceLevel->orders.empty()) {
         metaData.prevOrder = priceLevel->orders.back();
         orderMap[priceLevel->orders.back()->id].nextOrder = order;
@@ -119,67 +114,67 @@ void insert(std::shared_ptr<Order> order)
     if (priceLevel->orders.size() == 1) {
         priceLevel->firstOrder = order;
     }
-    priceLevel->totalQuantity += order->qty;
-    priceLevel->numberOfOrders++;
-
     orderMap[order->id] = metaData;
 }
 
-void deleteOrder(int orderId)
-{
-    // Find the metadata for the order
-    auto it = orderMap.find(orderId);
-    if (it != orderMap.end()) {
-        // Get the metadata
-        OrderMetaData metaData = it->second;
+// void deleteOrder(int orderId)
+// {
+//     // Find the metadata for the order
+//     auto it = orderMap.find(orderId);
+//     if (it != orderMap.end()) {
+//         // Get the metadata
+//         OrderMetaData metaData = it->second;
 
-        // Get the price level for the order
-        std::shared_ptr<PriceLevel> priceLevel = metaData.priceLevel;
+//         // Get the price level for the order
+//         std::shared_ptr<PriceLevel> priceLevel = metaData.priceLevel;
 
-        // Find the order in the price level
-        auto orderIt = std::find(priceLevel->orders.begin(), priceLevel->orders.end(), metaData.prevOrder);
-        if (orderIt != priceLevel->orders.end()) {
-            // Remove the order from the price level
-            priceLevel->orders.erase(orderIt);
+//         // Find the order in the price level
+//         auto orderIt = std::find(priceLevel->orders.begin(), priceLevel->orders.end(), metaData.prevOrder);
+//         if (orderIt != priceLevel->orders.end()) {
+//             // Remove the order from the price level
+//             priceLevel->orders.erase(orderIt);
 
-            // Update the total quantity and number of orders at this price level
-            priceLevel->totalQuantity -= (*orderIt)->qty;
-            priceLevel->numberOfOrders--;
+//             // Update the total quantity and number of orders at this price level
+//             priceLevel->totalQuantity -= (*orderIt)->qty;
+//             priceLevel->numberOfOrders--;
 
-            // If this was the first or last order at this price level, update the firstOrder and lastOrder pointers
-            if (priceLevel->firstOrder->id == orderId) {
-                priceLevel->firstOrder = metaData.nextOrder;
-            }
-            if (priceLevel->lastOrder->id == orderId) {
-                priceLevel->lastOrder = metaData.prevOrder;
-            }
+//             // If this was the first or last order at this price level, update the firstOrder and lastOrder pointers
+//             if (priceLevel->firstOrder->id == orderId) {
+//                 priceLevel->firstOrder = metaData.nextOrder;
+//             }
+//             if (priceLevel->lastOrder->id == orderId) {
+//                 priceLevel->lastOrder = metaData.prevOrder;
+//             }
 
-            // If there are orders before or after this order, update their nextOrder and prevOrder pointers
-            if (metaData.prevOrder) {
-                orderMap[metaData.prevOrder->id].nextOrder = metaData.nextOrder;
-            }
-            if (metaData.nextOrder) {
-                orderMap[metaData.nextOrder->id].prevOrder = metaData.prevOrder;
-            }
-        }
+//             // If there are orders before or after this order, update their nextOrder and prevOrder pointers
+//             if (metaData.prevOrder) {
+//                 orderMap[metaData.prevOrder->id].nextOrder = metaData.nextOrder;
+//             }
+//             if (metaData.nextOrder) {
+//                 orderMap[metaData.nextOrder->id].prevOrder = metaData.prevOrder;
+//             }
+//         }
 
-        // Remove the metadata from the order map
-        orderMap.erase(it);
-    }
-}
+//         // Remove the metadata from the order map
+//         orderMap.erase(it);
+//     }
+// }
 
-OrderMetaData* lookupOrder(int orderId)
-{
-    // Find the metadata for the order
-    auto it = orderMap.find(orderId);
-    if (it != orderMap.end()) {
-        // Return a pointer to the metadata
-        return &(it->second);
-    }
-    // If the order is not found, return nullptr
-    return nullptr;
-}
+// OrderMetaData* lookupOrder(int orderId)
+// {
+//     // Find the metadata for the order
+//     auto it = orderMap.find(orderId);
+//     if (it != orderMap.end()) {
+//         // Return a pointer to the metadata
+//         return &(it->second);
+//     }
+//     // If the order is not found, return nullptr
+//     return nullptr;
+// }
 
 } // OrderBook
 
-int main() { return 0; }
+int main()
+{
+    return 0;
+}
