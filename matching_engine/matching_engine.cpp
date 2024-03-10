@@ -9,7 +9,6 @@
 using namespace std;
 
 namespace OrderBook {
-
 enum class OrderType {
     GFD,
     IOC
@@ -37,7 +36,6 @@ struct Order {
         return os;
     }
 };
-
 struct PriceLevel {
     double price;
     shared_ptr<Order> firstOrder;
@@ -55,6 +53,18 @@ struct PriceLevel {
 struct OrderBook { // per instrument
     vector<shared_ptr<PriceLevel>> bidLevels;
     vector<shared_ptr<PriceLevel>> askLevels;
+
+    optional<double> bestBid;
+    optional<double> bestAsk;
+
+    void updateBestPrice(const Order& order)
+    {
+        if (order.side == Side::BUY) {
+            bestBid = order.price;
+        } else {
+            bestAsk = order.price;
+        }
+    }
 };
 
 struct OrderMetaData {
@@ -78,27 +88,38 @@ struct OrderMetaData {
 std::unordered_map<std::string, OrderMetaData> orderMap;
 // std::unordered_map<std::string, OrderBook> orderBookMap;
 
+shared_ptr<PriceLevel> findInsertionPosition(const Order& order, OrderBook& orderBook)
+{
+    if (orderBook.bestBid && order.side == Side::BUY && order.price >= *orderBook.bestBid) {
+        return orderBook.bidLevels.back(); // Insert at the end of bid levels
+    } else if (orderBook.bestAsk && order.side == Side::SELL && order.price <= *orderBook.bestAsk) {
+        return orderBook.askLevels.front(); // Insert at the beginning of ask levels
+    }
+    // Otherwise, use linear search (can be optimized further)
+    auto& levels = (order.side == Side::BUY) ? orderBook.bidLevels : orderBook.askLevels;
+    for (auto it = levels.rbegin(); it != levels.rend(); ++it) {
+        if (order.price >= (*it)->price) {
+            return *it;
+        }
+    }
+    return nullptr;
+}
+
 shared_ptr<PriceLevel> getPriceLevel(const Order& order, OrderBook& orderBook)
 {
-    auto& levels = (order.side == Side::BUY) ? orderBook.bidLevels : orderBook.askLevels;
-
-    auto it = std::find_if( // Iterate over the price levels from the end of the vector
-        levels.rbegin(), levels.rend(), [&order](auto& level) {
-            return level->price == order.price;
-        });
-
-    if (it == levels.rend()) {
+    auto it = findInsertionPosition(order, orderBook); // Optional optimization
+    if (!it) {
         auto newPriceLevel = make_shared<PriceLevel>(order.price);
         if (order.side == Side::BUY) {
             orderBook.bidLevels.push_back(newPriceLevel);
         } else {
             orderBook.askLevels.push_back(newPriceLevel);
         }
+        orderBook.updateBestPrice(order); // Update best bid/ask (optional)
         return newPriceLevel;
     }
-    return *it;
+    return it;
 }
-
 void insert(shared_ptr<Order> order, OrderBook& orderBook)
 {
     auto priceLevel = getPriceLevel(*order, orderBook);
@@ -109,7 +130,8 @@ void insert(shared_ptr<Order> order, OrderBook& orderBook)
         orderMap[priceLevel->orders.back()->id].nextOrder = order;
     }
 
-    priceLevel->orders.push_back(order);
+    priceLevel->orders.push_back(std::move(order));
+
     priceLevel->lastOrder = order;
     if (priceLevel->orders.size() == 1) {
         priceLevel->firstOrder = order;
