@@ -361,3 +361,152 @@ int main() {
 ```
 This code maintains two multisets, one for buy orders and one for sell orders. The orders are sorted by price. It also maintains a map from order ID to the order itself for quick access. When a new order comes in, it tries to match it with existing orders. If it can't be matched, it's added to the order book. If an order is cancelled or modified, it's removed from the order book and the map. The 'PRINT' operation simply prints the current state of the order book. Please note that this code assumes that the input is well-formed and does not contain any errors. You may want to add error checking code for a production environment. Also, this code does not handle the 'IOC' order type as per your requirement. You may need to add additional logic to handle this case. This code is a good starting point and you can modify it according to your needs. Please let me know if you have any questions or need further assistance.
 
+Sure, here is a high-level design for the `OrderBook` and `MatchingEngine` classes.
+
+**Order Class**
+
+First, we need an `Order` class to represent an order. This class will have the following properties:
+
+- `orderID`: A string that represents the unique identifier of the order.
+- `orderType`: A string that represents the type of the order (IOC or GFD).
+- `operation`: A string that represents the operation of the order (BUY or SELL).
+- `price`: An integer that represents the price of the order.
+- `quantity`: An integer that represents the quantity of the order.
+
+**OrderBook Class**
+
+The `OrderBook` class will maintain two priority queues (one for BUY orders and one for SELL orders). The priority queue for BUY orders will be a max heap based on the price, and the priority queue for SELL orders will be a min heap based on the price. If the prices are equal, the order that came first will have higher priority. This class will have the following methods:
+
+- `addOrder(Order order)`: Adds a new order to the appropriate priority queue.
+- `cancelOrder(string orderID)`: Removes an order from the priority queue.
+- `modifyOrder(Order order)`: Modifies an existing order in the priority queue.
+- `print()`: Prints the current state of the order book.
+
+**MatchingEngine Class**
+
+The `MatchingEngine` class will contain an instance of the `OrderBook` class and will be responsible for matching orders. This class will have the following methods:
+
+- `matchOrders()`: Matches BUY and SELL orders based on the matching rules. If a match is found, it prints the trade information and updates the order book.
+- `processOrder(Order order)`: Processes a new order. Depending on the operation of the order, it either adds the order to the order book, cancels an order, modifies an order, or prints the order book.
+
+This design ensures that the matching engine operates in a fair manner (price-time priority) and can handle a large number of orders efficiently. The use of priority queues ensures that orders can be matched, added, and removed in logarithmic time. The separate BUY and SELL order books allow the matching engine to quickly find matching orders. The use of a separate `OrderBook` class ensures that the order book logic is encapsulated and can be easily modified or replaced if needed. The `MatchingEngine` class provides a simple interface for processing orders and hides the complexity of the order matching logic.
+
+Please note that this is a high-level design and does not include all the necessary error checking and edge case handling. You would need to expand upon this design to fully implement the matching engine as per your requirements. Also, the actual implementation of the methods in these classes would depend on the specific rules of your matching engine. For example, the `matchOrders` method in the `MatchingEngine` class would need to implement the specific matching rules of your engine. Similarly, the `addOrder`, `cancelOrder`, and `modifyOrder` methods in the `OrderBook` class would need to implement the specific rules for adding, cancelling, and modifying orders in your engine. The `print` method would need to implement the specific format for printing the order book. 
+
+I hope this helps! Let me know if you have any questions or need further clarification.
+
+Absolutely, here's the high-level design of classes and data structures for the matching engine:
+
+**Classes:**
+
+1. **Order:**
+    * **Attributes:**
+        * `type` (enum): BUY or SELL
+        * `id` (string): Unique identifier for the order
+        * `price` (int): Price of the order
+        * `quantity` (int): Remaining quantity of the order
+        * `status` (enum): OPEN, FILLED, CANCELED
+        * `is_ioc` (bool): Flag indicating IOC (Insert or Cancel) order
+
+2. **OrderBook:**
+    * **Abstract class:** Represents a collection of orders for a specific type (BUY or SELL)
+    * **Interface:**
+        * `add_order(const Order& order)`: Adds an order to the book
+        * `remove_order(const std::string& id)`: Removes an order by ID
+        * `get_orders() const`: Returns a read-only reference to the internal order map (price -> set of orders)
+        * `modify_order(const std::string& id, int new_price, int new_quantity)`: Modifies an existing order
+
+3. **BuyOrderBook (inherits OrderBook):**
+    * **Implementation details:**
+        * Uses a `std::map<int, std::set<const Order*>>` to store orders.
+        * Key: Price (integer)
+        * Value: Set of pointers to `Order` objects (sorted by arrival time for FIFO processing)
+
+4. **SellOrderBook (inherits OrderBook):**
+    * **Implementation details:**
+        * Similar to BuyOrderBook, but uses a `std::map` with a custom comparator (`std::greater<int>`) to store orders in descending order of price (highest price first).
+
+5. **MatchingEngine:**
+    * Processes incoming orders and performs matching based on order types and prices.
+    * Manages two instances of `OrderBook`: one for BUY and one for SELL orders.
+
+**Data Structures:**
+
+* `std::map`: Used in `OrderBook` to efficiently store orders based on price.
+* `std::set`: Used within the `map` to maintain order within a specific price level (FIFO for BUY, descending price for SELL).
+* `std::string`: Used for storing unique order IDs.
+* `int`: Used for storing price and quantity of orders.
+* `enum`: Used for order type (`BUY` or `SELL`) and order status (`OPEN`, `FILLED`, `CANCELED`).
+
+**Relationships:**
+
+* `MatchingEngine` has two member variables of type `OrderBook`: one for `BuyOrderBook` and one for `SellOrderBook`.
+* `OrderBook` is an abstract class with a pure virtual interface.
+* `BuyOrderBook` and `SellOrderBook` inherit from `OrderBook` and provide concrete implementations for BUY and SELL orders respectively.
+* `Order` is a standalone class representing an individual order.
+
+**Key Points:**
+
+* Compile-time polymorphism is achieved through inheritance with `OrderBook` as the abstract base class.
+* Order books use a combination of `map` and `set` for efficient price-based lookup and maintaining order within each price level.
+* The design focuses on separation of concerns and promotes code reusability through the abstract `OrderBook` class.
+
+
+
+Here's a basic implementation of your requirements in C++20. Please note that this is a simplified version and may need to be adjusted based on your specific needs.
+
+```cpp
+#include <unordered_map>
+#include <vector>
+
+struct Order {
+    int id;
+    double price;
+    // Other order details...
+};
+
+struct PriceLevel {
+    double price;
+    std::vector<Order*> orders;
+    // Other price level details...
+};
+
+struct OrderBook {
+    std::vector<PriceLevel*> bidLevels;
+    std::vector<PriceLevel*> askLevels;
+    // Other order book details...
+};
+
+struct OrderMetaData {
+    OrderBook* orderBook;
+    PriceLevel* priceLevel;
+    Order* nextOrder;
+    Order* prevOrder;
+};
+
+std::unordered_map<int, OrderMetaData> orderMap;
+
+void insertOrder(Order* order, OrderBook* orderBook, PriceLevel* priceLevel) {
+    OrderMetaData metaData = {orderBook, priceLevel, nullptr, nullptr};
+    orderMap[order->id] = metaData;
+    // Insert the order into the price level and update nextOrder and prevOrder as needed.
+}
+
+void deleteOrder(int orderId) {
+    auto it = orderMap.find(orderId);
+    if (it != orderMap.end()) {
+        // Remove the order from the price level and update nextOrder and prevOrder as needed.
+        orderMap.erase(it);
+    }
+}
+
+OrderMetaData* lookupOrder(int orderId) {
+    auto it = orderMap.find(orderId);
+    if (it != orderMap.end()) {
+        return &(it->second);
+    }
+    return nullptr;
+}
+```
+
+This code creates an `unordered_map` from order IDs to order metadata. The `OrderMetaData` struct contains pointers to the order book and price level, as well as the next and previous orders in the queue. The `insertOrder`, `deleteOrder`, and `lookupOrder` functions provide O(1) insertion, deletion, and lookup of orders. The price levels in the order book are stored in a `vector` for fast average price lookup. Please note that this code does not handle the case of pathological orders far away from the inside of the book. You may need to add additional logic to handle such cases. Also, this code does not handle BBO updates, which you may need to implement separately based on your specific requirements.
