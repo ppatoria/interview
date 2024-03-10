@@ -1,3 +1,47 @@
+// struct OrderProcessor {
+
+//     void operator()(Order& order)
+//     {
+//         if (isValid(order)) {
+//             orders.insert(order);
+//         }
+//     }
+
+//     void operator()(CancelOrder& cancelOrder)
+//     {
+//         if (isValid(cancelOrder)) {
+//             orders.erase(cancelOrder.id);
+//         }
+//     }
+
+//     void operator()(ModifyOrder& modifyRequest)
+//     {
+//         if (!isValid(modifyRequest)) {
+//             return;
+//         };
+
+//         if (!orders.contains(modifyRequest.id)) {
+//             std::cout << "WARN: Not able to find in the Order Book. Ignoring [" << modifyRequest << "]" << endl;
+//             return;
+//         }
+
+//         Order newOrderFromExisting = orders.at(modifyRequest.id);
+//         cout << "got existing order: " << newOrderFromExisting << endl;
+
+//         if (!isModifiable(newOrderFromExisting)) {
+//             std::cout << "WARN: Order can't be modified. Ignoring [" << modifyRequest << "]" << endl;
+//             return;
+//         };
+
+//         newOrderFromExisting.price = modifyRequest.price;
+//         newOrderFromExisting.qty = modifyRequest.qty;
+//         newOrderFromExisting.side = modifyRequest.side;
+
+//         orders.erase(modifyRequest.id);
+//         orders.insert(newOrderFromExisting);
+//     }
+// };
+
 #include <algorithm>
 #include <climits>
 #include <cstdint>
@@ -24,7 +68,28 @@ enum class Side {
     SELL
 };
 
-struct Order {
+template <typename T>
+concept IsProcessable = requires(T order)
+{
+    order.process();
+};
+
+template <typename T>
+concept IsVerifiable = requires(T order)
+{
+    order.isValid()->same_as<bool>;
+};
+
+template <typename Derived>
+requires IsProcessable<Derived> && IsVerifiable<Derived>
+struct OrderInterface {
+    void process()
+    {
+        static_cast<Derived*>(this)->process();
+    }
+};
+
+struct Order : public Base<Order> {
     string id;
     uint64_t price;
     uint64_t qty;
@@ -40,13 +105,27 @@ struct Order {
            << (order.side == Side::BUY ? "BUY" : "SELL") << "\n";
         return os;
     }
+
+    void process()
+    {
+        if (isValid()) {
+            orders.insert(*this);
+        } else {
+            cout << "WARN: Ignoring invalid order: [" << *this << "]";
+        }
+    }
+
+    bool isValid()
+    {
+        return !(id.empty() || price <= 0 || qty <= 0);
+    }
 };
 
-struct CancelOrder {
+struct CancelOrder : public Base<CancelOrder> {
     string id;
 };
 
-struct ModifyOrder {
+struct ModifyOrder : public Base<ModifyOrder> {
     string id;
     uint64_t price;
     uint64_t qty;
@@ -168,10 +247,16 @@ public:
         }
     }
 
-    const Order& at(const std::string& orderid)
+    Order at(const std::string& orderid)
     {
-        auto iter = visit([&](auto it) { return it; }, orderLookup[orderid]);
-        return *iter;
+        Order order;
+        auto orderIterator = orderLookup[orderid];
+        visit(
+            [&](auto iter) {
+                order.id = iter->id;
+            },
+            orderIterator);
+        return order;
     }
 
     bool contains(const std::string& orderid)
@@ -236,49 +321,6 @@ private:
 };
 
 Orders orders;
-struct OrderProcessor {
-
-    void operator()(Order& order)
-    {
-        if (isValid(order)) {
-            orders.insert(order);
-        }
-    }
-
-    void operator()(CancelOrder& cancelOrder)
-    {
-        if (isValid(cancelOrder)) {
-            orders.erase(cancelOrder.id);
-        }
-    }
-
-    void operator()(ModifyOrder& modifyRequest)
-    {
-        if (!isValid(modifyRequest)) {
-            return;
-        };
-
-        if (!orders.contains(modifyRequest.id)) {
-            std::cout << "WARN: Not able to find in the Order Book. Ignoring [" << modifyRequest << "]" << endl;
-            return;
-        }
-
-        const auto& existingOrder = orders.at(modifyRequest.id);
-
-        if (!isModifiable(existingOrder)) {
-            std::cout << "WARN: Order can't be modified. Ignoring [" << modifyRequest << "]" << endl;
-            return;
-        };
-        Order modifiedOrder(existingOrder);
-
-        modifiedOrder.price = modifyRequest.price;
-        modifiedOrder.qty = modifyRequest.qty;
-        modifiedOrder.side = modifyRequest.side;
-
-        orders.erase(existingOrder.id);
-        orders.insert(modifiedOrder);
-    }
-};
 
 int main()
 {
