@@ -1,3 +1,53 @@
+#include "orderbook.h"
+
+using namespace std;
+
+namespace OrderBook {
+
+ostream& operator<<(ostream& os, const Order& order)
+{
+    os << order.id << "\t"
+       << order.price << "\t"
+       << order.qty << "\t"
+       << (order.type == OrderType::GFD ? "GFD" : "IOC") << "\t"
+       << (order.side == Side::BUY ? "BUY" : "SELL") << "\t"
+       << order.sym << "\n";
+    return os;
+}
+
+shared_ptr<PriceLevel> findInsertionPosition(const Order& order, OrderBook& orderBook)
+{
+    if (orderBook.bestBid && order.side == Side::BUY && order.price >= *orderBook.bestBid) {
+        return orderBook.bidLevels.back(); // Insert at the end of bid levels
+    } else if (orderBook.bestAsk && order.side == Side::SELL && order.price <= *orderBook.bestAsk) {
+        return orderBook.askLevels.front(); // Insert at the beginning of ask levels
+    }
+    // Otherwise, use linear search (can be optimized further)
+    auto& levels = (order.side == Side::BUY) ? orderBook.bidLevels : orderBook.askLevels;
+    for (auto it = levels.rbegin(); it != levels.rend(); ++it) {
+        if (order.price >= (*it)->price) {
+            return *it;
+        }
+    }
+    return nullptr;
+}
+
+shared_ptr<PriceLevel> getPriceLevel(const Order& order, OrderBook& orderBook)
+{
+    auto it = findInsertionPosition(order, orderBook); // Optional optimization
+    if (!it) {
+        auto newPriceLevel = make_shared<PriceLevel>(order.price);
+        if (order.side == Side::BUY) {
+            orderBook.bidLevels.push_back(newPriceLevel);
+        } else {
+            orderBook.askLevels.push_back(newPriceLevel);
+        }
+        orderBook.updateBestPrice(order); // Update best bid/ask (optional)
+        return newPriceLevel;
+    }
+    return it;
+}
+
 void insert(shared_ptr<Order> order, OrderBook& orderBook)
 {
     auto priceLevel = getPriceLevel(*order, orderBook);
@@ -5,7 +55,7 @@ void insert(shared_ptr<Order> order, OrderBook& orderBook)
     OrderMetaData metaData(priceLevel);
     if (!priceLevel->orders.empty()) {
         metaData.prevOrder = priceLevel->orders.back();
-        orderMap[priceLevel->orders.back()->id].nextOrder = order;
+        OrderMap[priceLevel->orders.back()->id].nextOrder = order;
     }
 
     priceLevel->orders.push_back(std::move(order));
@@ -14,7 +64,7 @@ void insert(shared_ptr<Order> order, OrderBook& orderBook)
     if (priceLevel->orders.size() == 1) {
         priceLevel->firstOrder = order;
     }
-    orderMap[order->id] = metaData;
+    OrderMap[order->id] = metaData;
 }
 
 // void delete(int orderId)
@@ -72,9 +122,4 @@ void insert(shared_ptr<Order> order, OrderBook& orderBook)
 //     return nullptr;
 // }
 
-} // OrderBook
-
-int main()
-{
-    return 0;
-}
+} // namespace OrderBook
