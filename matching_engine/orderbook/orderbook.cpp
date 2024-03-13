@@ -35,7 +35,16 @@ void PriceLevel::update(shared_ptr<Order> order)
     }
 }
 
-shared_ptr<PriceLevel> OrderBook::findInsertionPosition(const Order& order)
+void OrderBook::updateBestPrice(const Order& order)
+{
+    if (order.side == Side::BUY) {
+        bestBid = order.price;
+    } else {
+        bestAsk = order.price;
+    }
+}
+
+shared_ptr<PriceLevel> OrderBook::findInsertionPosition(const Order& order) const
 {
     if (bestBid // if best bid return the last/back position.
         && order.side == Side::BUY
@@ -48,15 +57,10 @@ shared_ptr<PriceLevel> OrderBook::findInsertionPosition(const Order& order)
     }
 
     // Otherwise, use linear search (can be optimized further)
-    auto& levels = (order.side == Side::BUY)
-        ? bidLevels
-        : askLevels;
-    for (auto it = levels.rbegin(); it != levels.rend(); ++it) {
-        if (order.price >= (*it)->price) {
-            return *it;
-        }
-    }
-    return nullptr;
+    const auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
+    return *find_if(levels.rbegin(), levels.rend(), [&order](const auto& level) {
+        return order.price >= level->price;
+    });
 }
 
 /**
@@ -64,28 +68,15 @@ shared_ptr<PriceLevel> OrderBook::findInsertionPosition(const Order& order)
  * If the price level does not exist,
  * it creates a new one and adds it to the bid or ask levels of the order book.
  */
-shared_ptr<PriceLevel> OrderBook::getPriceLevel(const Order& order)
+shared_ptr<PriceLevel> OrderBook::findOrCreatePriceLevel(const Order& order)
 {
-    auto it = findInsertionPosition(order); // Optional optimization
-    if (!it) {
-        auto newPriceLevel = make_shared<PriceLevel>(order.price);
-        if (order.side == Side::BUY) {
-            bidLevels.push_back(newPriceLevel);
-        } else {
-            askLevels.push_back(newPriceLevel);
-        }
+    auto pos = findInsertionPosition(order); // Optional optimization
+    if (!pos) {
         updateBestPrice(order);
-        return newPriceLevel;
+        auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
+        return levels.emplace_back(make_shared<PriceLevel>(order.price));
     }
-    return it;
-}
-void OrderBook::updateBestPrice(const Order& order)
-{
-    if (order.side == Side::BUY) {
-        bestBid = order.price;
-    } else {
-        bestAsk = order.price;
-    }
+    return pos;
 }
 
 /** This code creates an OrderMetaData object for the order.
@@ -106,7 +97,7 @@ OrderMetaData::OrderMetaData(shared_ptr<PriceLevel> priceLevel, shared_ptr<Order
 
 void add(shared_ptr<Order> order, OrderBook& orderBook)
 {
-    auto priceLevel = orderBook.getPriceLevel(*order);
+    auto priceLevel = orderBook.findOrCreatePriceLevel(*order);
     priceLevel->update(order);
     OrderMetaData metaData(priceLevel, order);
     OrderMetaDataByOrderIDMap[order->id] = metaData;

@@ -50,8 +50,9 @@ struct OrderBook {
     optional<double> bestAsk;
 
     void updateBestPrice(const Order& order);
-    shared_ptr<PriceLevel> findInsertionPosition(const Order& order);
-    shared_ptr<PriceLevel> getPriceLevel(const Order& order);
+
+    shared_ptr<PriceLevel> findInsertionPosition(const Order& order) const;
+    std::shared_ptr<PriceLevel> findOrCreatePriceLevel(const Order&);
 };
 
 struct OrderMetaData {
@@ -61,15 +62,6 @@ struct OrderMetaData {
 
     OrderMetaData() = default;
 
-    // inline OrderMetaData(
-    //     shared_ptr<PriceLevel> priceLevel,
-    //     shared_ptr<Order> nextOrder = nullptr,
-    //     shared_ptr<Order> prevOrder = nullptr)
-    //     : priceLevel(priceLevel)
-    //     , nextOrder(nextOrder)
-    //     , prevOrder(prevOrder)
-    // {
-    // }
     OrderMetaData(shared_ptr<PriceLevel> priceLevel, shared_ptr<Order> order);
 };
 
