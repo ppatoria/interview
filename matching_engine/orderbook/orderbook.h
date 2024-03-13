@@ -46,13 +46,8 @@ struct OrderBook {
     vector<shared_ptr<PriceLevel>> bidLevels;
     vector<shared_ptr<PriceLevel>> askLevels;
 
-    optional<double> bestBid;
-    optional<double> bestAsk;
-
-    void updateBestPrice(const Order& order);
-
     shared_ptr<PriceLevel> findInsertionPosition(const Order& order) const;
-    std::shared_ptr<PriceLevel> findOrCreatePriceLevel(const Order&);
+    shared_ptr<PriceLevel> findOrCreatePriceLevel(const Order&);
 };
 
 struct OrderMetaData {

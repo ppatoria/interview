@@ -35,28 +35,8 @@ void PriceLevel::update(shared_ptr<Order> order)
     }
 }
 
-void OrderBook::updateBestPrice(const Order& order)
-{
-    if (order.side == Side::BUY) {
-        bestBid = order.price;
-    } else {
-        bestAsk = order.price;
-    }
-}
-
 shared_ptr<PriceLevel> OrderBook::findInsertionPosition(const Order& order) const
 {
-    if (bestBid // if best bid return the last/back position.
-        && order.side == Side::BUY
-        && order.price >= *bestBid) {
-        return bidLevels.back();
-    } else if (bestAsk // if best ask return the front position.
-        && order.side == Side::SELL
-        && order.price <= *bestAsk) {
-        return askLevels.front();
-    }
-
-    // Otherwise, use linear search (can be optimized further)
     const auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
     return *find_if(levels.rbegin(), levels.rend(), [&order](const auto& level) {
         return order.price >= level->price;
@@ -72,7 +52,6 @@ shared_ptr<PriceLevel> OrderBook::findOrCreatePriceLevel(const Order& order)
 {
     auto pos = findInsertionPosition(order); // Optional optimization
     if (!pos) {
-        updateBestPrice(order);
         auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
         return levels.emplace_back(make_shared<PriceLevel>(order.price));
     }
