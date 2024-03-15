@@ -1,32 +1,35 @@
 cmake_minimum_required(VERSION 3.12)
 project(matching_engine)
 
-# set(CMAKE_CXX_COMPILER clang-18)
-set(CMAKE_CXX_COMPILER g++)
+include(spdlog.cmake)
 
+set(CMAKE_CXX_COMPILER clang-18)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
+# Find LLVM
+find_package(LLVM REQUIRED CONFIG)
 
-# find_package(LLVM REQUIRED CONFIG)
+# Add LLVM definitions and include directories
+add_definitions(${LLVM_DEFINITIONS})
+include_directories(${LLVM_INCLUDE_DIRS})
 
-# Optionally include directories and definitions for LLVM
-# message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-# message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-# include_directories(${LLVM_INCLUDE_DIRS})
-# add_definitions(${LLVM_DEFINITIONS})
-
-# Identify the LLVM libraries you need (replace with actual tool names)
-# llvm_map_components_to_libnames(llvm_libs irreader  # Example tool, replace with actual ones
-#                                                        # Add more tools as needed, separated by spaces
-#                                  )
-
-# Add your executable
+set(MATCHING_ENGINE ${CMAKE_SOURCE_DIR})
+set(ORDERBOOK ${MATCHING_ENGINE}/orderbook)
 add_executable(mengine
-  ${CMAKE_SOURCE_DIR}/matching_engine.cpp
-  ${CMAKE_SOURCE_DIR}/orderbook/orderbook.cpp
+  ${MATCHING_ENGINE}/matching_engine.cpp
+  ${ORDERBOOK}/order.cpp
+  ${ORDERBOOK}/pricelevel.cpp
+  ${ORDERBOOK}/ordermetadata.cpp
+  ${ORDERBOOK}/orderbook.cpp
+  ${ORDERBOOK}/orderbookhandler.cpp
+  # ${ORDERBOOK}/debug.cpp
 )
 
-# Link your executable with the required LLVM libraries
-# target_link_libraries(mengine ${llvm_libs})
+# Map the LLVM components to their library names
+llvm_map_components_to_libnames(llvm_libs support core irreader)
+
+# Link against spdlog, the C++ standard library, and the LLVM libraries
+target_link_libraries(mengine ${SPDLOG_LIB} "-lstdc++" ${llvm_libs})
+set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld")

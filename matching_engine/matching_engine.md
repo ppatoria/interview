@@ -510,3 +510,51 @@ OrderMetaData* lookupOrder(int orderId) {
 ```
 
 This code creates an `unordered_map` from order IDs to order metadata. The `OrderMetaData` struct contains pointers to the order book and price level, as well as the next and previous orders in the queue. The `insertOrder`, `deleteOrder`, and `lookupOrder` functions provide O(1) insertion, deletion, and lookup of orders. The price levels in the order book are stored in a `vector` for fast average price lookup. Please note that this code does not handle the case of pathological orders far away from the inside of the book. You may need to add additional logic to handle such cases. Also, this code does not handle BBO updates, which you may need to implement separately based on your specific requirements.
+
+
+# Samples
+
+Sure, let's walk through the process of adding two orders to the order book. We'll use the following sample data:
+
+- Order 1: Buy AAPL @ $100
+- Order 2: Sell AAPL @ $101
+
+Here are the steps:
+
+1. **Initial state**: All data structures are empty.
+
+2. **Add Order 1**:
+    - `OrderBookByOrderIDMap`: {1: OrderBook for AAPL}
+    - `OrderMetaDataByOrderIDMap`: {1: OrderMetaData for Order 1}
+    - `OrderBook for AAPL`: {PriceLevel @ $100: [Order 1]}
+    - `PriceLevel @ $100`: {firstOrder: Order 1, lastOrder: Order 1, orders: [Order 1]}
+    - `OrderMetaData for Order 1`: {priceLevel: PriceLevel @ $100, prevOrder: nullptr, nextOrder: nullptr}
+
+3. **Add Order 2**:
+    - `OrderBookByOrderIDMap`: {1: OrderBook for AAPL, 2: OrderBook for AAPL}
+    - `OrderMetaDataByOrderIDMap`: {1: OrderMetaData for Order 1, 2: OrderMetaData for Order 2}
+    - `OrderBook for AAPL`: {PriceLevel @ $100: [Order 1], PriceLevel @ $101: [Order 2]}
+    - `PriceLevel @ $100`: {firstOrder: Order 1, lastOrder: Order 1, orders: [Order 1]}
+    - `PriceLevel @ $101`: {firstOrder: Order 2, lastOrder: Order 2, orders: [Order 2]}
+    - `OrderMetaData for Order 1`: {priceLevel: PriceLevel @ $100, prevOrder: nullptr, nextOrder: nullptr}
+    - `OrderMetaData for Order 2`: {priceLevel: PriceLevel @ $101, prevOrder: nullptr, nextOrder: nullptr}
+
+At each step, the `OrderBookByOrderIDMap` and `OrderMetaDataByOrderIDMap` are updated to include the new order. The `OrderBook` for AAPL includes the new `PriceLevel` for the order's price, and the `OrderMetaData` for the new order includes the `PriceLevel` and the previous and next orders at that price level.
+
+I hope this helps! Let me know if you have any other questions.
+Sure, let's add a new order "Order 3: Buy AAPL @ $100" to the existing state. Here's how the data structures might evolve:
+
+1. **Add Order 3** (Buy AAPL @ $100, Order ID: 3):
+    - Call `addOrderToBook` with the new order.
+    - `OrderBookByOrderIDMap`: {1: OrderBook for AAPL, 2: OrderBook for AAPL, 3: OrderBook for AAPL}
+    - `OrderMetaDataByOrderIDMap`: {1: OrderMetaData for Order 1, 2: OrderMetaData for Order 2, 3: OrderMetaData for Order 3}
+    - `OrderBook for AAPL`: {PriceLevel @ $100: [Order 1, Order 3], PriceLevel @ $101: [Order 2]}
+    - `PriceLevel @ $100`: {firstOrder: Order 1, lastOrder: Order 3, orders: [Order 1, Order 3]}
+    - `PriceLevel @ $101`: {firstOrder: Order 2, lastOrder: Order 2, orders: [Order 2]}
+    - `OrderMetaData for Order 1`: {priceLevel: PriceLevel @ $100, prevOrder: nullptr, nextOrder: Order 3}
+    - `OrderMetaData for Order 2`: {priceLevel: PriceLevel @ $101, prevOrder: nullptr, nextOrder: nullptr}
+    - `OrderMetaData for Order 3`: {priceLevel: PriceLevel @ $100, prevOrder: Order 1, nextOrder: nullptr}
+
+At this step, the `OrderBookByOrderIDMap` and `OrderMetaDataByOrderIDMap` are updated to include the new order. The `OrderBook` for AAPL includes the new `PriceLevel` for the order's price, and the `OrderMetaData` for the new order includes the `PriceLevel` and the previous and next orders at that price level.
+
+I hope this helps! Let me know if you have any other questions.
