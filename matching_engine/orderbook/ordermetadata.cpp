@@ -1,5 +1,6 @@
 #include "orderbook.h"
-
+#include <format>
+#include <string>
 using namespace std;
 
 namespace OrderBook {
@@ -14,5 +15,18 @@ OrderMetaData::OrderMetaData(shared_ptr<PriceLevel> priceLevel)
     , nextOrder(nullptr)
     , prevOrder(nullptr)
 {
+}
+string OrderMetaData::toString()
+{
+    string str = "[";
+    if (priceLevel)
+        str += format("PriceLevel: {}", priceLevel->toString());
+    if (nextOrder)
+        str += format("\tnextOrder: {}", nextOrder->toString());
+    if (prevOrder)
+        str += format("\tprevOrder: {}", prevOrder->toString());
+    str += "]";
+
+    return str;
 }
 }

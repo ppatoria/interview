@@ -1,0 +1,13 @@
+# Target labels
+ SPDLOG
+# Source files and their labels
+/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/SPDLOG
+/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/SPDLOG.rule
+/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/SPDLOG-complete.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-build.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-configure.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-download.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-install.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-mkdir.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-patch.rule
+/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG-stamp/SPDLOG-update.rule

@@ -1,28 +1,54 @@
 #include "orderbook.h"
+#include <deque>
+#include <format>
+#include <string>
 
 using namespace std;
 
 namespace OrderBook {
 
-PriceLevel::PriceLevel(double price)
+PriceLevel::PriceLevel(Price price)
     : price(price)
-    , firstOrder(nullptr)
-    , lastOrder(nullptr)
 {
 }
 
-/**
- * - adds the order to the list of orders of that price level.
- * - updates the lastOrder of that price level.
- * -- If this is the first order at this price level, it also updates the firstOrder.
- */
-void PriceLevel::addOrder(shared_ptr<Order> order)
+PriceLevel::PriceLevel(PriceLevel&& other) noexcept
 {
-    orders.emplace_back(order);
+    moveResourceFrom(std::move(other));
+    other.setToDefaultState();
+}
 
-    lastOrder = order;
-    if (orders.size() == 1) {
-        firstOrder = order;
+PriceLevel& PriceLevel::operator=(PriceLevel&& other) noexcept
+{
+    if (this != &other) {
+        moveResourceFrom(std::move(other));
+        other.setToDefaultState();
     }
+    return *this;
 }
+
+void PriceLevel::moveResourceFrom(PriceLevel&& other)
+{
+    price = std::move(other.price);
+    orders = std::move(other.orders);
+}
+
+void PriceLevel::setToDefaultState()
+{
+    price = Price();
+    orders = deque<Order>();
+}
+
+string PriceLevel::toString() const
+{
+
+    string str = std::format("price: {} ", price);
+    str += "[";
+    for (const auto& order : orders) {
+        str += order.id + ",";
+    }
+    str += "]";
+    return str;
+}
+
 }

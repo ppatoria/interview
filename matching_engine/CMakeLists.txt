@@ -13,17 +13,21 @@ find_package(LLVM REQUIRED CONFIG)
 
 # Add LLVM definitions and include directories
 add_definitions(${LLVM_DEFINITIONS})
-include_directories(${LLVM_INCLUDE_DIRS})
+
+include_directories(
+  ${LLVM_INCLUDE_DIRS}
+  ${SPDLOG_INCLUDE_DIR})
+message("SPDLOG_INCLUDE_DIR: ${SPDLOG_INCLUDE_DIR}")
 
 set(MATCHING_ENGINE ${CMAKE_SOURCE_DIR})
 set(ORDERBOOK ${MATCHING_ENGINE}/orderbook)
 add_executable(mengine
-  ${MATCHING_ENGINE}/matching_engine.cpp
+  ${MATCHING_ENGINE}/main.cpp
   ${ORDERBOOK}/order.cpp
   ${ORDERBOOK}/pricelevel.cpp
-  ${ORDERBOOK}/ordermetadata.cpp
+  # ${ORDERBOOK}/ordermetadata.cpp
   ${ORDERBOOK}/orderbook.cpp
-  ${ORDERBOOK}/orderbookhandler.cpp
+  # ${ORDERBOOK}/orderbookhandler.cpp
   # ${ORDERBOOK}/debug.cpp
 )
 
