@@ -1,1 +1,0 @@
-cmd='cd;/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG/src/SPDLOG;&&;cmake;-D;CMAKE_INSTALL_PREFIX=/home/ppatoria/dev/interview/matching_engine/build/thirdparty/SPDLOG;.'

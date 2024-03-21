@@ -1,8 +1,0 @@
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/SPDLOG.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/intrinsics_gen.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/omp_gen.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/acc_gen.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/RISCVTargetParserTableGen.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/mengine.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/edit_cache.dir
-/home/ppatoria/dev/interview/matching_engine/build/CMakeFiles/rebuild_cache.dir
