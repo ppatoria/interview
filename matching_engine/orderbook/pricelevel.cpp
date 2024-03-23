@@ -2,6 +2,7 @@
 #include <deque>
 #include <format>
 #include <string>
+#include <utility>
 
 using namespace std;
 
@@ -18,7 +19,8 @@ PriceLevel::PriceLevel(PriceLevel&& other) noexcept
     other.setToDefaultState();
 }
 
-PriceLevel& PriceLevel::operator=(PriceLevel&& other) noexcept
+PriceLevel&
+PriceLevel::operator=(PriceLevel&& other) noexcept
 {
     if (this != &other) {
         moveResourceFrom(std::move(other));
@@ -39,7 +41,8 @@ void PriceLevel::setToDefaultState()
     orders = deque<Order>();
 }
 
-string PriceLevel::toString() const
+string
+PriceLevel::toString() const
 {
 
     string str = std::format("price: {} ", price);
@@ -49,6 +52,34 @@ string PriceLevel::toString() const
     }
     str += "]";
     return str;
+}
+
+const Order&
+PriceLevel::enqueue(Order&& order)
+{
+    return orders.emplace_back(std::move(order));
+}
+
+std::pair<bool, PriceLevel::OrderIterator>
+PriceLevel::findOrder(const Order& order)
+{
+    /* Search from the back(last element) towards the front(first element) */
+    auto iter = find_if(orders.rbegin(), orders.rend(), [&order](const auto& ord) {
+        return order.id == ord.id;
+    });
+
+    if (iter == orders.rend())
+        return std::make_pair(false, orders.end());
+    else
+        return std::make_pair(true, iter.base());
+}
+
+int PriceLevel::removeOrder(const Order& order)
+{
+    return std::erase_if(orders,
+        [&order](const auto& ord) {
+            return order.id == ord.id;
+        });
 }
 
 }

@@ -25,10 +25,9 @@ add_executable(mengine
   ${MATCHING_ENGINE}/main.cpp
   ${ORDERBOOK}/order.cpp
   ${ORDERBOOK}/pricelevel.cpp
-  # ${ORDERBOOK}/ordermetadata.cpp
+  ${ORDERBOOK}/pricelevels.cpp
   ${ORDERBOOK}/orderbook.cpp
-  # ${ORDERBOOK}/orderbookhandler.cpp
-  # ${ORDERBOOK}/debug.cpp
+  ${ORDERBOOK}/orderbooks.cpp
 )
 
 # Map the LLVM components to their library names
