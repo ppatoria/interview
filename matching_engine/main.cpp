@@ -1,4 +1,3 @@
-#include "build/thirdparty/SPDLOG/include/spdlog/spdlog.h"
 #include "orderbook/orderbook.h"
 #include "orderbook/orderbookhandler.h"
 #include "spdlog/spdlog.h"

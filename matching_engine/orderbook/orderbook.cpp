@@ -2,6 +2,8 @@
 #include "../utils.h"
 #include "algorithm"
 #include "orderbookhandler.h"
+#include "spdlog/spdlog.h"
+#include <cassert>
 #include <format>
 #include <stdexcept>
 #include <string>
@@ -53,32 +55,32 @@ OrderBook::OrderBook(string sym)
 {
 }
 
-optional<reference_wrapper<PriceLevel>> OrderBook::findInsertionPosition(const Order& order)
+PriceLevel&
+ PriceLevels::add(const Price& price) {
+     auto result = find(price);
+     if(result.first)
+         return *result.second;
+     return priceLevels.emplace_back(price);
+ }
+
+
+std::pair<bool, PriceLevels::iterator>
+PriceLevels::find(const Price& price)
 {
-    auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
-    auto iter = find_if(levels.rbegin(), levels.rend(), [&order](const auto& level) {
-        return order.price >= level.price;
+    auto iter = find_if(priceLevels.rbegin(), priceLevels.rend(), [&price](const auto& priceLevel) {
+        return price == priceLevel.price;
     });
-    if (iter == levels.rend())
-        return nullopt;
+    if (iter == priceLevels.rend())
+        return std::make_pair( false, priceLevels.end() );
     else
-        return ref(*iter);
+        return std::make_pair(true, iter.base());
 }
 
-/**
- * This method gets the price level for the order.
- * If the price level does not exist,
- * it creates a new one and adds it to the bid or ask levels of the order book.
- */
-PriceLevel& OrderBook::findOrCreatePriceLevel(const Order& order)
-{
-    auto pos = findInsertionPosition(order); // Optional optimization
-    if (pos) {
-        auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
-        pos = levels.emplace_back(order.price);
-    }
-    return *pos;
-}
+const Order&
+PriceLevel::enqueue(Order&& order){
+    return orders.emplace_back(std::move(order));
+}    
+
 string OrderBook::toString() const
 {
     return string();
@@ -86,26 +88,62 @@ string OrderBook::toString() const
 
 const Order& OrderBook::newOrder(Order&& order)
 {
-    auto& priceLevel = findOrCreatePriceLevel(order);
-    return priceLevel.orders.emplace_back(std::move(order));
+    auto& priceLevels = order.side == Side::BUY ? bidLevels : askLevels;
+    auto& priceLevel = priceLevels.add(order.price);
+    return priceLevel.enqueue(std::move(order));
 }
-const Order& OrderBook::cancelOrder(const Order& order)
+
+std::pair<bool, PriceLevel::OrderIterator>
+PriceLevel::findOrder(const Order& order){
+    /* Search from the back(last element) towards the front(first element) */
+    auto iter = find_if(orders.rbegin(), orders.rend(), [&order](const auto& ord) {
+        return order.id == ord.id;
+    });
+
+    if (iter == orders.rend())
+        return std::make_pair(false, orders.end());
+    else
+        return std::make_pair(true, iter.base());
+}
+
+int
+PriceLevel::removeOrder(const Order& order)
 {
-    return Order();
+    return std::erase_if(orders,
+                         [&order] (const auto& ord){
+                           return order.id == ord.id;
+                         });
+}
 
-    // auto& levels = (order.side == Side::BUY) ? bidLevels : askLevels;
-    // auto iter = find_if(levels.rbegin(), levels.rend(), [&order](const auto& level) {
-    //     return order.price >= level.price;
-    // });
-    // if (iter == levels.rend()) {
-    //     const auto& error = std::format(
-    //         "No PriveLevel found for cancel request with ID: [{}], Symbol: [{}] and Price: [{}]",
-    //         order.id, order.sym, order.price);
-    //     throw runtime_error(error);
-    // } else {
+bool OrderBook::cancelOrder(const Order& order)
+{
+    auto errorMessage = [&order](const string& object) {
+        return std::format(
+            "No [{}] found for cancel request with ID: [{}], Symbol: [{}] and Price: [{}]",
+            object, order.id, order.sym, order.price);
+    };
 
-    //     return *removed_iter;
-    // }
+    auto& priceLevels = order.side == Side::BUY ? bidLevels : askLevels;
+    auto result = priceLevels.find(order.price);
+
+    assert(result.first == true);
+
+    if (result.first == false) {
+        spdlog::error(errorMessage("price level"));
+        return false;
+    }
+
+    auto priceLevel = result.second;
+
+    auto removed_count = priceLevel->removeOrder(order);
+
+    assert(removed_count > 0);
+
+    if (removed_count <= 0) {
+        spdlog::error(errorMessage("order"));
+        return false;
+    }
+    return true;
 }
 
 const Order& modifyOrder(const Order& order)

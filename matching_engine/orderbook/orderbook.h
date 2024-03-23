@@ -68,6 +68,7 @@ private:
 
 struct PriceLevel {
 
+    using OrderIterator = deque<Order>::iterator;
     double price;
     deque<Order> orders; // FIFO queue for order execution
 
@@ -82,27 +83,38 @@ struct PriceLevel {
 
     string toString() const;
 
+    const Order& enqueue(Order&& order);
+    std::pair<bool, OrderIterator> findOrder(const Order&);
+
+    int removeOrder(const Order& order);
+
 private:
     void moveResourceFrom(PriceLevel&& order);
     void setToDefaultState();
 };
 
+class PriceLevels{
+    std::vector<PriceLevel> priceLevels;    
+public:
+    using iterator = std::vector<PriceLevel>::iterator;
+    std::pair<bool, iterator> find(const Price&);
+    PriceLevel& add(const Price&);
+};
+
 struct OrderBook {
     string symbol;
-    vector<PriceLevel> bidLevels;
-    vector<PriceLevel> askLevels;
+    PriceLevels bidLevels;
+    PriceLevels askLevels;
 
     PriceLevelByOrderIDMap priceLevelByOrderIDMap;
 
-private:
-    optional<reference_wrapper<PriceLevel>> findInsertionPosition(const Order&);
 
-    PriceLevel& findOrCreatePriceLevel(const Order&);
 
 public:
+    OrderBook() = default;
     OrderBook(Symbol);
     const Order& newOrder(Order&&);
-    const Order& cancelOrder(const Order&);
+    bool cancelOrder(const Order&);
     const Order& modifyOrder(const Order&);
 
     string toString() const;
@@ -126,7 +138,7 @@ public:
 class OrderBookHandler {
 public:
     const Order& newOrder(Order&&);
-    const Order& cancelOrder(const Order&);
+    bool cancelOrder(const Order&);
     const Order& modifyOrder(const Order&);
 
 private:
