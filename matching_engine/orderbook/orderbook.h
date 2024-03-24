@@ -1,10 +1,12 @@
-#include "algorithm"
+#include <algorithm>
 #include <deque>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "errorinfo.h"
+#include <expected>
 
 #pragma once
 
@@ -105,10 +107,7 @@ struct OrderBook {
     string symbol;
     PriceLevels bidLevels;
     PriceLevels askLevels;
-
     PriceLevelByOrderIDMap priceLevelByOrderIDMap;
-
-
 
 public:
     OrderBook() = default;
@@ -116,7 +115,7 @@ public:
     const Order& newOrder(Order&&);
     bool cancelOrder(const Order&);
     const Order& modifyOrder(const Order&);
-
+    std::expected<PriceLevel::OrderIterator, FailedSearchInfo> findOrder(const Order&);
     string toString() const;
 };
 

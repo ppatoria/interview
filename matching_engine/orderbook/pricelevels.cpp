@@ -19,9 +19,10 @@ PriceLevels::add(const Price& price)
 std::pair<bool, PriceLevels::iterator>
 PriceLevels::find(const Price& price)
 {
-    auto iter = find_if(priceLevels.rbegin(), priceLevels.rend(), [&price](const auto& priceLevel) {
-        return price == priceLevel.price;
-    });
+    auto iter = find_if(priceLevels.rbegin(), priceLevels.rend(),
+        [&price](const auto& priceLevel) {
+            return price == priceLevel.price;
+        });
     if (iter == priceLevels.rend())
         return std::make_pair(false, priceLevels.end());
     else

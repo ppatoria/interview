@@ -3,11 +3,13 @@
 #include "algorithm"
 #include "spdlog/spdlog.h"
 #include <cassert>
+#include <exception>
 #include <string>
 
 using namespace std;
 
 namespace OrderBook {
+
 
 OrderBook::OrderBook(string sym)
     : symbol(std::move(sym))
@@ -29,6 +31,34 @@ OrderBook::newOrder(Order&& order)
 }
 
 
+    std::expected<PriceLevel::OrderIterator, FailedSeachInfo>
+    OrderBook::findOrder(const Order& order)
+    {
+        auto errorMessage = [&order](const string& object) {
+            return std::format(
+                "No [{}] found for cancel request with ID: [{}], Symbol: [{}] and Price: [{}]",
+                object, order.id, order.sym, order.price);
+        };
+
+        auto& priceLevels = order.side == Side::BUY ? bidLevels : askLevels;
+        auto priceLevelSearchResult = priceLevels.find(order.price);
+
+        assert(priceLevelSearchResult);
+        if(!priceLevelSearchResult){
+            return std::unexpected(FailedSearchInfo { message = errorMessage("price level"); });
+        }
+
+        auto priceLevel = priceLevelSearchResult.second;
+        auto orderSearchResult = priceLevel->findOrder(order);
+
+        assert(orderSearchResult);
+        if (!orderSearchResult) {
+            return std::unexpected(FailedSearchInfo { message = errorMessage("order"); });
+        }
+
+        return orderSearchResult;
+    }
+
 bool
 OrderBook::cancelOrder(const Order& order)
 {
@@ -39,16 +69,16 @@ OrderBook::cancelOrder(const Order& order)
     };
 
     auto& priceLevels = order.side == Side::BUY ? bidLevels : askLevels;
-    auto result = priceLevels.find(order.price);
+    auto priceLevelSearchResult = priceLevels.find(order.price);
 
-    assert(result.first == true);
+    assert(priceLevelSearchResult.first == true);
 
-    if (result.first == false) {
+    if (priceLevelSearchResult.first == false) {
         spdlog::error(errorMessage("price level"));
         return false;
     }
 
-    auto priceLevel = result.second;
+    auto priceLevel = priceLevelSearchResult.second;
 
     auto removed_count = priceLevel->removeOrder(order);
 
@@ -61,5 +91,7 @@ OrderBook::cancelOrder(const Order& order)
     return true;
 }
 
-
+    const Order& OrderBook::modifyOrder(const Order& order){
+        
+    }
 } // namespace OrderBook
