@@ -1,15 +1,14 @@
 #include "orderbook.h"
 #include "../utils.h"
 #include "algorithm"
-#include "spdlog/spdlog.h"
-#include <cassert>
 #include <exception>
+#include <format>
 #include <string>
+#include <system_error>
 
 using namespace std;
 
 namespace OrderBook {
-
 
 OrderBook::OrderBook(string sym)
     : symbol(std::move(sym))
@@ -30,37 +29,35 @@ OrderBook::newOrder(Order&& order)
     return priceLevel.enqueue(std::move(order));
 }
 
+outcome::result<PriceLevel::OrderIterator>
+OrderBook::findOrder(const Order& order)
+{
+    auto errorMessage = [&order](const string& object) {
+        return std::format(
+            "No [{}] found for cancel request with ID: [{}], Symbol: [{}] and Price: [{}]",
+            object, order.id, order.sym, order.price);
+    };
 
-    std::expected<PriceLevel::OrderIterator, FailedSeachInfo>
-    OrderBook::findOrder(const Order& order)
-    {
-        auto errorMessage = [&order](const string& object) {
-            return std::format(
-                "No [{}] found for cancel request with ID: [{}], Symbol: [{}] and Price: [{}]",
-                object, order.id, order.sym, order.price);
-        };
+    auto& priceLevels = order.side == Side::BUY ? bidLevels : askLevels;
+    auto priceLevelSearchResult = priceLevels.find(order.price);
 
-        auto& priceLevels = order.side == Side::BUY ? bidLevels : askLevels;
-        auto priceLevelSearchResult = priceLevels.find(order.price);
-
-        assert(priceLevelSearchResult);
-        if(!priceLevelSearchResult){
-            return std::unexpected(FailedSearchInfo { message = errorMessage("price level"); });
-        }
-
-        auto priceLevel = priceLevelSearchResult.second;
-        auto orderSearchResult = priceLevel->findOrder(order);
-
-        assert(orderSearchResult);
-        if (!orderSearchResult) {
-            return std::unexpected(FailedSearchInfo { message = errorMessage("order"); });
-        }
-
-        return orderSearchResult;
+    assert(priceLevelSearchResult.first);
+    if (!priceLevelSearchResult.first) {
+        return outcome::failure(std::error_code(priceLevelSearchResult.second, generic_category()));
     }
 
-bool
-OrderBook::cancelOrder(const Order& order)
+    auto priceLevel = priceLevelSearchResult.second;
+    auto orderSearchResult = priceLevel->findOrder(order);
+
+    assert(orderSearchResult);
+    if (!orderSearchResult) {
+        return outcome::failure(std::error_code(1, generic_category()));
+    }
+
+    return orderSearchResult;
+}
+
+bool OrderBook::cancelOrder(const Order& order)
 {
     auto errorMessage = [&order](const string& object) {
         return std::format(
@@ -91,7 +88,7 @@ OrderBook::cancelOrder(const Order& order)
     return true;
 }
 
-    const Order& OrderBook::modifyOrder(const Order& order){
-        
-    }
+const Order& OrderBook::modifyOrder(const Order& order)
+{
+}
 } // namespace OrderBook

@@ -1,16 +1,16 @@
-#include <algorithm>
+#include "errorinfo.h"
+#include <boost/outcome.hpp>
 #include <deque>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-#include "errorinfo.h"
-#include <expected>
-
 #pragma once
 
 using namespace std;
+namespace outcome = BOOST_OUTCOME_V2_NAMESPACE;
 
 /**
  * Design: Components and their relationship:
@@ -95,8 +95,9 @@ private:
     void setToDefaultState();
 };
 
-class PriceLevels{
-    std::vector<PriceLevel> priceLevels;    
+class PriceLevels {
+    std::vector<PriceLevel> priceLevels;
+
 public:
     using iterator = std::vector<PriceLevel>::iterator;
     std::pair<bool, iterator> find(const Price&);
@@ -115,7 +116,7 @@ public:
     const Order& newOrder(Order&&);
     bool cancelOrder(const Order&);
     const Order& modifyOrder(const Order&);
-    std::expected<PriceLevel::OrderIterator, FailedSearchInfo> findOrder(const Order&);
+    outcome::result<PriceLevel::OrderIterator> findOrder(const Order&);
     string toString() const;
 };
 

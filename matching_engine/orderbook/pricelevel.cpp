@@ -44,14 +44,15 @@ void PriceLevel::setToDefaultState()
 string
 PriceLevel::toString() const
 {
+    return std::string();
 
-    string str = std::format("price: {} ", price);
-    str += "[";
-    for (const auto& order : orders) {
-        str += order.id + ",";
-    }
-    str += "]";
-    return str;
+    // string str = std::format("price: {} ", price);
+    // str += "[";
+    // for (const auto& order : orders) {
+    //     str += order.id + ",";
+    // }
+    // str += "]";
+    // return str;
 }
 
 const Order&

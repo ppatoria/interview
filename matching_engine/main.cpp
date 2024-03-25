@@ -1,7 +1,6 @@
 #include "orderbook/orderbook.h"
 #include "orderbook/orderbookhandler.h"
-#include "spdlog/spdlog.h"
-
+// #include <boost/log/trivial.hpp>
 using namespace std;
 using namespace OrderBook;
 

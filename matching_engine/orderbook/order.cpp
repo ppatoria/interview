@@ -1,6 +1,7 @@
 #include "orderbook.h"
 #include <format>
 #include <string>
+
 using namespace std;
 
 namespace OrderBook {
@@ -57,9 +58,11 @@ void Order::setToDefaultState()
 
 std::string Order::toString() const
 {
-    return std::format("[ {} {} {} {} {} {} ]",
-        id, price, qty, sym,
-        (type == OrderType::GFD ? "GFD" : "IOC"),
-        (side == Side::BUY ? "BUY" : "SELL"));
+    return std::string();
+
+    // return std::format("[ {} {} {} {} {} {} ]",
+    //     id, price, qty, sym,
+    //     (type == OrderType::GFD ? "GFD" : "IOC"),
+    //     (side == Side::BUY ? "BUY" : "SELL"));
 }
 } // namespace OrderBook
