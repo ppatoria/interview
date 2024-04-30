@@ -1,0 +1,51 @@
+@startuml
+actor Analyst as "Financial Analyst"
+collections "Historical Data" as HD
+collections "Market Data" as MD
+database "Financial Statements" as FS
+entity "Risk-Free Rate" as RFR
+entity "Equity Pricing Model" as EPM
+entity "Statistical Tests" as ST
+entity "Real-Time Pricing" as RTP
+entity "Model Assumptions" as MA
+entity "Market Return" as MR
+entity "Beta" as B
+entity "Dividends" as D
+
+Analyst -> HD : Gather daily stock prices
+Analyst -> FS : Gather financial statements
+note right of FS : Financial statements provide insight into a company's\n financial health and future earnings potential.
+Analyst -> RFR : Gather risk-free rate
+note right of RFR : The risk-free rate (r) is used in stock pricing models \nto discount future cash flows to present value.
+Analyst -> MR : Gather market return data
+Analyst -> B : Calculate beta of the stock
+note right of B : Beta (β) is a measure of a stock's volatility \nin relation to the overall market.
+Analyst -> D : Gather dividend data
+note right of D : Dividends are part of the company's profits paid to \nshareholders and are used in the DDM.
+Analyst -> EPM : Select DDM, DCF, or CAPM
+note right of EPM : These models use dividends, cash flows, and beta to\n calculate the intrinsic value of a stock.
+note right of EPM : DDM calculates a stock's price by \ndiscounting predicted dividends to present value.\n For example, if a stock pays annual dividends\n of $2, expected to grow at 3% per year, and the required\n rate of return is 10%, the stock's\n price is calculated as\n \( P = \frac{D}{r - g} = \frac{2}{0.10 - 0.03} = \frac{2}{0.07} = \$28.57 \).
+
+note right of EPM : DCF model values a stock by discounting\n the expected future cash flows to present value.\n For instance,\n if a company is expected to\n generate $100 in cash flow next year, and we use a discount rate of 10%,\n the present value of this cash flow is\n \( PV = \frac{CF}{(1 + r)^n} = \frac{100}{(1 + 0.10)^1} = \$90.91 \).
+
+note right of EPM : CAPM calculates the expected return of\n a stock based on its risk relative to the market.\n If the risk-free rate is 2%, the market return\n is 8%, and the stock's beta is 1.5,\n the expected return using CAPM is\n \( E(R) = r_f + \beta \times (E(R_m) - r_f) = 0.02 + 1.5 \times (0.08 - 0.02) = 0.11 \) or 11%.
+
+EPM -> Analyst : Provide parameters (D, g, r, β)
+Analyst -> HD : Estimate growth rate (g)
+Analyst -> FS : Estimate future cash flows
+Analyst -> EPM : Calibrate model
+EPM -> Analyst : Match market data
+Analyst -> EPM : Adjust parameters
+Analyst -> EPM : Assume market efficiency
+EPM -> ST : Validate model fit
+ST -> Analyst : Assess goodness of fit
+Analyst -> RTP : Use calibrated model
+RTP -> Analyst : Calculate fair stock prices
+Analyst -> MA : Acknowledge assumptions
+MA -> Analyst : Understand deviations
+Analyst -> EPM : Ensure alignment with market data
+EPM -> Analyst : Provide reliable valuations
+Analyst -> EPM : Calculate risk premium using CAPM
+EPM -> Analyst : Provide expected return
+
+@enduml
