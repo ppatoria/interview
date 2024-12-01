@@ -166,4 +166,4 @@ fn main() {
 - **Rust** enforces strict memory safety rules through ownership, borrowing, and lifetimes, combined with concurrency primitives like `Arc` and `Mutex`.
 - **C++** relies on the programmer to manually manage memory and synchronization, which can lead to bugs and undefined behavior if not handled correctly.
 
-Rust’s model eliminates many classes of common concurrency and memory safety bugs that are prevalent in C++ by catching them at compile time, thus providing a safer and more robust approach to concurrent programming. If you have any specific scenarios or more questions, feel free to ask!
+Rust’s model eliminates many classes of common concurrency and memory safety bugs that are prevalent in C++ by catching them at compile time, thus providing a safer and more robust approach to concurrent programming.
