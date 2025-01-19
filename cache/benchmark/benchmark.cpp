@@ -1,10 +1,11 @@
-#include <benchmark/benchmark.h>
-#include <vector>
-#include <array>
 #include <algorithm>
+#include <array>
+#include <benchmark/benchmark.h>
+#include <concepts>
+#include <cstdlib> // For posix_memalign
 #include <random>
-#include <span>  // Requires C++20
-#include <cstdlib>  // For posix_memalign
+#include <span> // Requires C++20
+#include <vector>
 
 /**
  * Non-Aligned Data Structure
@@ -16,8 +17,8 @@ struct MarketData {
 
     MarketData() = default;
 
-    MarketData(int symbolID, double price_, int vol)
-        : symbol_id(symbolID), price(price_), volume(vol) {}
+    MarketData(double price_, int symbolID, int vol)
+        : price(price_), symbol_id(symbolID), volume(vol) {}
 };
 
 /*
@@ -30,19 +31,26 @@ struct alignas(32) MarketDataAligned {
 
     MarketDataAligned() = default;
 
-    MarketDataAligned(int symbolID, double price_, int vol)
+    MarketDataAligned(double price_, int symbolID, int vol)
         : symbol_id(symbolID), price(price_), volume(vol) {}
  };
 
-struct MarketDataRearranged {
+struct MarketDataArranged {
   double price;
   int symbol_id;
   int volume;
 
-  MarketDataRearranged() = default;
+  MarketDataArranged() = default;
 
-  MarketDataRearranged(double price_, int symbolID, int vol)
+  MarketDataArranged(double price_, int symbolID, int vol)
       : price(price_), symbol_id(symbolID), volume(vol) {}
+};
+
+template <typename T, std::size_t N> struct AlignedArray {
+  alignas(64) std::array<T, N> data;
+  using value_type = T;
+  T &operator[](size_t index) { return data[index]; }
+  const T &operator[](size_t index) const { return data[index]; }
 };
 
 /**
@@ -77,70 +85,100 @@ struct aligned_allocator {
 /**
  * Simulated Data Input Generator
  */
-template <typename Container, size_t Volume>
-class SimulatedInput {
-public:
-    explicit SimulatedInput(Container container) 
-    : data_(std::move(container)) 
-    {
-        populateData();
-    }
 
-    const Container& get() const { return data_; }
+template <typename T, size_t N>
+class SimulatedInputArray {
+public:
+    explicit SimulatedInputArray(){
+    populateData();
+  }
+
+    const AlignedArray<T,N> &get() const { return data_; }
 
 private:
-    Container data_;
+    AlignedArray<T,N> data_;
 
-    void populateData() {
-        if constexpr (requires { data_.reserve(Volume); }) data_.reserve(Volume);
-
-        std::mt19937 rng(std::random_device{}());
-        std::uniform_int_distribution<int> symbolDist(1, 1000);
-        std::uniform_real_distribution<double> priceDist(1.0, 1000.0);
-        std::uniform_int_distribution<int> volumeDist(1, 10000);
-
-        for (std::size_t i = 0; i < Volume; ++i) {
-            data_.emplace_back(symbolDist(rng), priceDist(rng), volumeDist(rng));
-        }
+  void populateData() {
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> symbolDist(1, 1000);
+    std::uniform_real_distribution<double> priceDist(1.0, 1000.0);
+    std::uniform_int_distribution<int> volumeDist(1, 10000);
+    for (std::size_t i = 0; i < N; ++i) {
+        data_[i] = T{priceDist(rng), symbolDist(rng), volumeDist(rng)};
     }
+  }
+};
+
+template <typename Container, size_t Volume> class SimulatedInput {
+public:
+  explicit SimulatedInput(Container container) : data_(std::move(container)) {
+    populateData();
+  }
+
+  const Container &get() const { return data_; }
+
+private:
+  Container data_;
+
+  void populateData() {
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> symbolDist(1, 1000);
+    std::uniform_real_distribution<double> priceDist(1.0, 1000.0);
+    std::uniform_int_distribution<int> volumeDist(1, 10000);
+    for (std::size_t i = 0; i < Volume; ++i) {
+        data_.emplace_back(priceDist(rng), symbolDist(rng), volumeDist(rng));
+    }
+  }
 };
 
 // Constants
-constexpr size_t Volume = 100000;
+constexpr size_t Volume = 1000000;
 constexpr size_t BlockSize = 64;  // Fallback for systems without std::hardware_destructive_interference_size
 
 using MDVector = std::vector<MarketData>;
-using AlignedMDVector = std::vector<MarketDataAligned, aligned_allocator<MarketDataAligned, 64>>;
-using RearrangedMDVector = std::vector<MarketDataRearranged>;
-
 static SimulatedInput<MDVector, Volume> inputGenerator(MDVector{});
-static SimulatedInput<AlignedMDVector, Volume> alignedInputGenerator(AlignedMDVector{});
-static SimulatedInput<RearrangedMDVector, Volume> rearrangedInputGenerator(RearrangedMDVector{});
+const auto &SimulatedInputData = inputGenerator.get();
 
-const auto& SimulatedInputData = inputGenerator.get();
-const auto& SimulatedAlignedInputData = alignedInputGenerator.get();
-const auto& SimulatedRearrangedInputData = rearrangedInputGenerator.get();
+using AlignedMDVector =
+    std::vector<MarketDataAligned, aligned_allocator<MarketDataAligned, 64>>;
+static SimulatedInput<AlignedMDVector, Volume>
+    alignedInputGenerator(AlignedMDVector{});
+const auto &SimulatedAlignedInputData = alignedInputGenerator.get();
+
+using RearrangedMDVector = std::vector<MarketDataArranged>;
+static SimulatedInput<RearrangedMDVector, Volume>
+    rearrangedInputGenerator(RearrangedMDVector{});
+const auto &SimulatedRearrangedInputData = rearrangedInputGenerator.get();
+
+static SimulatedInputArray<MarketData, Volume>
+    alignedArrayInputGenerator;
+const auto &SimulatedAlignedArrayInputData = alignedArrayInputGenerator.get();
+
+static SimulatedInputArray<MarketDataArranged, Volume>
+    alignedArrayArrangedDataInputGenerator;
+const auto &SimulatedAlignedArrayArrangedInputData = alignedArrayArrangedDataInputGenerator.get();
+
 
 /**
  * Benchmarking Functions
  */
-void ProcessMarketData(benchmark::State& state) {
-    for (auto _ : state) {
-        for (const auto& update : SimulatedInputData) {
-            benchmark::DoNotOptimize(&update.symbol_id);
-            benchmark::DoNotOptimize(&update.price);
-            benchmark::DoNotOptimize(&update.volume);
-        }
+void ProcessMarketData(benchmark::State &state) {
+  for (auto _ : state) {
+    for (const auto &update : SimulatedInputData) {
+      benchmark::DoNotOptimize(&update.symbol_id);
+      benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.volume);
     }
+  }
 }
 BENCHMARK(ProcessMarketData);
 
 void ProcessAlignedMarketData(benchmark::State& state) {
     for (auto _ : state) {
         for (const auto& update : SimulatedAlignedInputData) {
-            benchmark::DoNotOptimize(&update.symbol_id);
-            benchmark::DoNotOptimize(&update.price);
-            benchmark::DoNotOptimize(&update.volume);
+          benchmark::DoNotOptimize(&update.price);
+          benchmark::DoNotOptimize(&update.symbol_id);
+          benchmark::DoNotOptimize(&update.volume);
         }
     }
 }
@@ -149,13 +187,37 @@ BENCHMARK(ProcessAlignedMarketData);
 void ProcessRearrangedMarketData(benchmark::State &state) {
   for (auto _ : state) {
     for (const auto &update : SimulatedRearrangedInputData) {
-      benchmark::DoNotOptimize(&update.symbol_id);
       benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.symbol_id);
       benchmark::DoNotOptimize(&update.volume);
     }
   }
 }
 BENCHMARK(ProcessRearrangedMarketData);
+
+void ProcessAlignedArrayMarketData(benchmark::State &state) {
+  for (auto _ : state) {
+    for (const auto &update : SimulatedAlignedArrayInputData.data) {
+
+      benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.symbol_id);
+      benchmark::DoNotOptimize(&update.volume);
+    }
+  }
+}
+BENCHMARK(ProcessAlignedArrayMarketData);
+
+void ProcessAlignedArrayArrangedMarketData(benchmark::State &state) {
+  for (auto _ : state) {
+    for (const auto &update : SimulatedAlignedArrayArrangedInputData.data) {
+
+      benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.symbol_id);
+      benchmark::DoNotOptimize(&update.volume);
+    }
+  }
+}
+BENCHMARK(ProcessAlignedArrayArrangedMarketData);
 
 template <typename DataType, template <typename, typename> class Container, typename Allocator>
 void ProcessDataWithBuffering(
@@ -267,7 +329,7 @@ void ProcessRearrangedWithPrefetching(benchmark::State& state) {
                 __builtin_prefetch(&(*prefetch_it), 0, 3);
             }
 
-            std::span<const MarketDataRearranged> data_span(&*it, count);
+            std::span<const MarketDataArranged> data_span(&*it, count);
 
             for (const auto& update : data_span) {
                 benchmark::DoNotOptimize(&update.symbol_id);
