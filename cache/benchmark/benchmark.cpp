@@ -24,14 +24,14 @@ struct MarketData {
 /*
  * Aligned Data Structure
  */
-struct alignas(32) MarketDataAligned {
+struct alignas(32) MarketData32Aligned {
     int symbol_id;
     double price;
     int volume;
 
-    MarketDataAligned() = default;
+    MarketData32Aligned() = default;
 
-    MarketDataAligned(double price_, int symbolID, int vol)
+    MarketData32Aligned(double price_, int symbolID, int vol)
         : symbol_id(symbolID), price(price_), volume(vol) {}
  };
 
@@ -87,9 +87,9 @@ struct aligned_allocator {
  */
 
 template <typename T, size_t N>
-class SimulatedInputArray {
+class SimulatedAlignedArrayGenerator {
 public:
-    explicit SimulatedInputArray(){
+    explicit SimulatedAlignedArrayGenerator(){
     populateData();
   }
 
@@ -140,7 +140,7 @@ static SimulatedInput<MDVector, Volume> inputGenerator(MDVector{});
 const auto &SimulatedInputData = inputGenerator.get();
 
 using AlignedMDVector =
-    std::vector<MarketDataAligned, aligned_allocator<MarketDataAligned, 64>>;
+    std::vector<MarketData32Aligned, aligned_allocator<MarketData32Aligned, 64>>;
 static SimulatedInput<AlignedMDVector, Volume>
     alignedInputGenerator(AlignedMDVector{});
 const auto &SimulatedAlignedInputData = alignedInputGenerator.get();
@@ -150,11 +150,11 @@ static SimulatedInput<RearrangedMDVector, Volume>
     rearrangedInputGenerator(RearrangedMDVector{});
 const auto &SimulatedRearrangedInputData = rearrangedInputGenerator.get();
 
-static SimulatedInputArray<MarketData, Volume>
+static SimulatedAlignedArrayGenerator<MarketData, Volume>
     alignedArrayInputGenerator;
 const auto &SimulatedAlignedArrayInputData = alignedArrayInputGenerator.get();
 
-static SimulatedInputArray<MarketDataArranged, Volume>
+static SimulatedAlignedArrayGenerator<MarketDataArranged, Volume>
     alignedArrayArrangedDataInputGenerator;
 const auto &SimulatedAlignedArrayArrangedInputData = alignedArrayArrangedDataInputGenerator.get();
 
@@ -195,7 +195,7 @@ void ProcessRearrangedMarketData(benchmark::State &state) {
 }
 BENCHMARK(ProcessRearrangedMarketData);
 
-void ProcessAlignedArrayMarketData(benchmark::State &state) {
+void ProcessAlignedNonArrangedMarketData(benchmark::State &state) {
   for (auto _ : state) {
     for (const auto &update : SimulatedAlignedArrayInputData.data) {
 
@@ -205,9 +205,9 @@ void ProcessAlignedArrayMarketData(benchmark::State &state) {
     }
   }
 }
-BENCHMARK(ProcessAlignedArrayMarketData);
+BENCHMARK(ProcessAlignedNonArrangedMarketData);
 
-void ProcessAlignedArrayArrangedMarketData(benchmark::State &state) {
+void ProcessAlignedArrangedMarketData(benchmark::State &state) {
   for (auto _ : state) {
     for (const auto &update : SimulatedAlignedArrayArrangedInputData.data) {
 
@@ -217,7 +217,7 @@ void ProcessAlignedArrayArrangedMarketData(benchmark::State &state) {
     }
   }
 }
-BENCHMARK(ProcessAlignedArrayArrangedMarketData);
+BENCHMARK(ProcessAlignedArrangedMarketData);
 
 template <typename DataType, template <typename, typename> class Container, typename Allocator>
 void ProcessDataWithBuffering(
@@ -302,7 +302,7 @@ void ProcessAlignedWithPrefetching(benchmark::State& state) {
                 __builtin_prefetch(&(*prefetch_it), 0, 3);
             }
 
-            std::span<const MarketDataAligned> data_span(&*it, count);
+            std::span<const MarketData32Aligned> data_span(&*it, count);
 
             for (const auto& update : data_span) {
                 benchmark::DoNotOptimize(&update.symbol_id);
@@ -342,3 +342,45 @@ void ProcessRearrangedWithPrefetching(benchmark::State& state) {
 }
 BENCHMARK(ProcessRearrangedWithPrefetching);
 BENCHMARK_MAIN();
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// -*- mode: compilation; default-directory: "~/dev/interview/cache/benchmark/build/" -*-                                 //
+// Compilation started at Sun Jan 19 04:01:08                                                                             //
+//                                                                                                                        //
+// cd build/; cmake ../; make ; ./cache_benchmark                                                                         //
+// -- Configuring done                                                                                                    //
+// -- Generating done                                                                                                     //
+// -- Build files have been written to: /home/ppatoria/dev/interview/cache/benchmark/build                                //
+// Consolidate compiler generated dependencies of target cache_benchmark                                                  //
+// [ 50%] Building CXX object CMakeFiles/cache_benchmark.dir/benchmark.cpp.o                                              //
+// [100%] Linking CXX executable cache_benchmark                                                                          //
+// [100%] Built target cache_benchmark                                                                                    //
+// 2025-01-19T04:01:11-05:00                                                                                              //
+// Running ./cache_benchmark                                                                                              //
+// Run on (4 X 3300 MHz CPU s)                                                                                            //
+// CPU Caches:                                                                                                            //
+//   L1 Data 32 KiB (x2)                                                                                                  //
+//   L1 Instruction 32 KiB (x2)                                                                                           //
+//   L2 Unified 256 KiB (x2)                                                                                              //
+//   L3 Unified 3072 KiB (x1)                                                                                             //
+// Load Average: 1.14, 1.44, 1.55                                                                                         //
+// ***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead. //
+// ------------------------------------------------------------------------------                                         //
+// Benchmark                                    Time             CPU   Iterations                                         //
+// ------------------------------------------------------------------------------                                         //
+// ProcessMarketData                     12142007 ns     12130609 ns           62                                         //
+// ProcessAlignedMarketData              11987555 ns     11976287 ns           59                                         //
+// ProcessRearrangedMarketData           11421725 ns     11412121 ns           60                                         //
+// ProcessAlignedNonArrangedMarketData    3550849 ns      3548313 ns          195                                         //
+// ProcessAlignedArrangedMarketData       3518831 ns      3516521 ns          198                                         //
+// ProcessDefaultDataWithBuffering        9973000 ns      9963683 ns           70                                         //
+// ProcessAlignedDataWithBuffering        9144951 ns      9136090 ns           75                                         //
+// ProcessRearrangedDataWithBuffering    11167273 ns     11136324 ns           86                                         //
+// ProcessWithPrefetching                20539593 ns     20538612 ns           34                                         //
+// ProcessAlignedWithPrefetching         20635539 ns     20635318 ns           34                                         //
+// ProcessRearrangedWithPrefetching      20326708 ns     20325925 ns           35                                         //
+//                                                                                                                        //
+// Compilation finished at Sun Jan 19 04:01:21                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
