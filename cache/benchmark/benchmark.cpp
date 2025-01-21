@@ -150,19 +150,30 @@ static SimulatedInput<RearrangedMDVector, Volume>
     rearrangedInputGenerator(RearrangedMDVector{});
 const auto &SimulatedRearrangedInputData = rearrangedInputGenerator.get();
 
+static SimulatedAlignedArrayGenerator<MarketData32Aligned, Volume>
+    alignedArrayAlignedDataInputGenerator;
+const auto &SimulatedAlignedArrayAlignedInputData = alignedArrayAlignedDataInputGenerator.get();
+
 static SimulatedAlignedArrayGenerator<MarketData, Volume>
     alignedArrayInputGenerator;
 const auto &SimulatedAlignedArrayInputData = alignedArrayInputGenerator.get();
 
 static SimulatedAlignedArrayGenerator<MarketDataArranged, Volume>
     alignedArrayArrangedDataInputGenerator;
-const auto &SimulatedAlignedArrayArrangedInputData = alignedArrayArrangedDataInputGenerator.get();
+const auto &SimulatedAlignedArrayArrangedInputData =
+    alignedArrayArrangedDataInputGenerator.get();
 
+using ArrangedAlignedMDVector = std::vector<MarketDataArranged,
+                                    aligned_allocator<MarketDataArranged, 64>>;
+static SimulatedInput<ArrangedAlignedMDVector, Volume>
+    arrangedAlignedVectorInputGenerator(ArrangedAlignedMDVector{});
+const auto &SimulatedArrangedAlignedVectorInputData = arrangedAlignedVectorInputGenerator.get();
 
 /**
  * Benchmarking Functions
  */
 void ProcessMarketData(benchmark::State &state) {
+
   for (auto _ : state) {
     for (const auto &update : SimulatedInputData) {
       benchmark::DoNotOptimize(&update.symbol_id);
@@ -174,13 +185,13 @@ void ProcessMarketData(benchmark::State &state) {
 BENCHMARK(ProcessMarketData);
 
 void ProcessAlignedMarketData(benchmark::State& state) {
-    for (auto _ : state) {
-        for (const auto& update : SimulatedAlignedInputData) {
-          benchmark::DoNotOptimize(&update.price);
-          benchmark::DoNotOptimize(&update.symbol_id);
-          benchmark::DoNotOptimize(&update.volume);
-        }
+  for (auto _ : state) {
+    for (const auto &update : SimulatedAlignedInputData) {
+      benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.symbol_id);
+      benchmark::DoNotOptimize(&update.volume);
     }
+  }
 }
 BENCHMARK(ProcessAlignedMarketData);
 
@@ -218,6 +229,44 @@ void ProcessAlignedArrangedMarketData(benchmark::State &state) {
   }
 }
 BENCHMARK(ProcessAlignedArrangedMarketData);
+
+void ProcessAlignedArrangedMarketDataUnrollingLoop(benchmark::State &state) {
+  for (auto _ : state) {
+
+#pragma GCC unroll 4
+for (const auto &update : SimulatedAlignedArrayArrangedInputData.data) {
+
+  benchmark::DoNotOptimize(&update.price);
+  benchmark::DoNotOptimize(&update.symbol_id);
+  benchmark::DoNotOptimize(&update.volume);
+}
+  }
+}
+BENCHMARK(ProcessAlignedArrangedMarketDataUnrollingLoop);
+
+void ProcessAlignedArrayAlignedMarketData(benchmark::State &state) {
+  for (auto _ : state) {
+    for (const auto &update : SimulatedAlignedArrayAlignedInputData.data) {
+
+      benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.symbol_id);
+      benchmark::DoNotOptimize(&update.volume);
+    }
+  }
+}
+BENCHMARK(ProcessAlignedArrayAlignedMarketData);
+
+void ProcessAlignedVectorArrangedMarketData(benchmark::State &state) {
+  for (auto _ : state) {
+      for (const auto &update : SimulatedArrangedAlignedVectorInputData){
+      benchmark::DoNotOptimize(&update.price);
+      benchmark::DoNotOptimize(&update.symbol_id);
+      benchmark::DoNotOptimize(&update.volume);
+    }
+  }
+}
+BENCHMARK(ProcessAlignedVectorArrangedMarketData);
+
 
 template <typename DataType, template <typename, typename> class Container, typename Allocator>
 void ProcessDataWithBuffering(
@@ -344,7 +393,7 @@ BENCHMARK(ProcessRearrangedWithPrefetching);
 BENCHMARK_MAIN();
 
 
-
+// Debug mode
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // -*- mode: compilation; default-directory: "~/dev/interview/cache/benchmark/build/" -*-                                 //
 // Compilation started at Sun Jan 19 04:01:08                                                                             //
@@ -384,3 +433,128 @@ BENCHMARK_MAIN();
 //                                                                                                                        //
 // Compilation finished at Sun Jan 19 04:01:21                                                                            //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+# Release Mode
+2025-01-19T12:03:10-05:00
+Running ./cache_benchmark
+Run on (4 X 3300 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x2)
+  L1 Instruction 32 KiB (x2)
+  L2 Unified 256 KiB (x2)
+  L3 Unified 3072 KiB (x1)
+Load Average: 0.92, 0.85, 0.94
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+-------------------------------------------------------------------------------
+Benchmark                                     Time             CPU   Iterations
+-------------------------------------------------------------------------------
+ProcessMarketData                        404610 ns       405071 ns         1719
+ProcessAlignedMarketData                 514260 ns       514844 ns         1615
+ProcessRearrangedMarketData              407211 ns       407669 ns         1352
+ProcessAlignedNonArrangedMarketData      428100 ns       428575 ns         1664
+ProcessAlignedArrangedMarketData         436971 ns       437424 ns         1633
+ProcessAlignedArrayAlignedMarketData     438603 ns       439051 ns         1596
+ProcessDefaultDataWithBuffering         3058098 ns      3060837 ns          224
+ProcessAlignedDataWithBuffering         3089844 ns      3092825 ns          234
+ProcessRearrangedDataWithBuffering      2385500 ns      2387697 ns          286
+ProcessWithPrefetching                  1718383 ns      1720087 ns          385
+ProcessAlignedWithPrefetching           2253740 ns      2255871 ns          301
+ProcessRearrangedWithPrefetching        1154778 ns      1155876 ns          553
+
+*/
+
+/*
+ The behavior you're observing is due to the differences in optimizations applied in **Release** and **Debug** build modes:
+
+### **Debug Mode (Unoptimized Code)**
+1. **Lack of Compiler Optimizations:**
+   - Debug mode prioritizes debugging information over performance.
+   - The compiler doesn't apply aggressive optimizations like **inlining**, **loop unrolling**, or **vectorization**.
+   - As a result, the performance reflects the raw cost of each instruction and memory access, exposing inefficiencies in non-aligned and non-arranged data.
+
+2. **Alignment and Cache Effects:**
+   - Debug mode doesn't optimize memory layout or data access patterns.
+   - **Aligned and arranged data** exhibit better performance because the memory accesses are more efficient for the CPU's cache.
+
+3. **Extra Debug Overheads:**
+   - Debug mode adds instrumentation to help with debugging (e.g., bounds checking, function call stack maintenance).
+   - These extra instructions amplify the differences between efficient (aligned/arranged) and inefficient (non-aligned) data layouts.
+
+---
+
+### **Release Mode (Optimized Code)**
+1. **Aggressive Optimizations:**
+   - Release mode enables optimizations like:
+     - **Instruction scheduling** to reduce stalls.
+     - **Loop unrolling** to improve throughput.
+     - **Inlining** of small functions.
+     - **Prefetching** and **SIMD vectorization** for better use of hardware resources.
+   - These optimizations often make differences between aligned/arranged and non-aligned/non-arranged data layouts less noticeable.
+
+2. **Branch Prediction Improvements:**
+   - The CPU's branch predictor works more effectively with streamlined, optimized code.
+   - Conditional operations and loops may be restructured to minimize pipeline stalls.
+
+3. **Memory Access Patterns:**
+   - Even non-aligned and non-arranged data can be processed quickly when the compiler optimizes memory accesses, prefetches data into the cache, or leverages SIMD instructions.
+   - Modern CPUs are highly capable of handling misaligned accesses with minimal penalties when combined with compiler optimizations.
+
+4. **Vectorization and Prefetching:**
+   - Non-aligned vector processing benefits significantly from SIMD optimizations, especially for contiguous memory regions.
+   - Optimized code may exhibit similar or better performance than arranged data due to reduced overhead from the optimizations.
+
+---
+
+### **Key Observations from Your Results**
+- **In Debug Mode:**
+  - The performance difference between arranged/aligned and non-arranged/non-aligned data is more pronounced because of raw access costs and lack of optimizations.
+  - Aligned and arranged data dominate due to reduced cache misses and alignment benefits.
+
+- **In Release Mode:**
+  - The performance gap narrows or even reverses because optimizations mitigate the penalties of misalignment and inefficiency.
+  - The additional overhead of arranging and aligning data might not provide as much benefit due to the CPU's ability to handle inefficiencies.
+
+---
+
+### **Why Non-Arranged Data Performs Well in Release Mode**
+1. **Reduced Overhead for Simple Processing:**
+   - Non-arranged data may skip unnecessary preprocessing overhead that aligned/arranged data might involve.
+   - If the processing is straightforward, the CPU optimizations can handle non-aligned data efficiently.
+
+2. **Compiler Optimizations:**
+   - Optimizations might include loop fusion, reordering, or instruction-level parallelism, reducing penalties from misaligned accesses.
+   - Prefetching and speculative execution can mitigate cache and alignment penalties.
+
+3. **Aligned Data Overhead:**
+   - Aligning data may incur setup or maintenance overhead that becomes unnecessary under optimal conditions.
+
+---
+
+### **How to Analyze and Confirm the Cause**
+To better understand the behavior, consider the following:
+
+1. **Profile Cache Performance:**
+   - Use **Valgrind Cachegrind** or **Intel VTune** to analyze cache misses and memory access patterns for both builds.
+
+2. **Inspect Assembly Code:**
+   - Compare the generated assembly for Debug and Release builds using `objdump` or `Godbolt Compiler Explorer`:
+     ```bash
+     objdump -d cache_benchmark > debug_asm.txt
+     objdump -d cache_benchmark_release > release_asm.txt
+     ```
+
+3. **Analyze Compiler Optimizations:**
+   - Use `-fopt-info` with `gcc` or `clang` to understand applied optimizations:
+     ```bash
+     g++ -O3 -fopt-info-optimized benchmark.cpp
+     ```
+
+4. **Evaluate Specific Optimizations:**
+   - Disable specific optimizations in the Release build (e.g., `-fno-unroll-loops`) to see their impact.
+
+5. **Use Benchmarks with Larger Data Sets:**
+   - Larger inputs might highlight the differences better, as alignment and arrangement benefits grow with input size.
+
+By profiling and analyzing, you'll gain deeper insights into how specific compiler optimizations affect your data processing patterns.
+ */
