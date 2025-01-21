@@ -46,7 +46,6 @@ void ProcessArrangedDataAlignedArrayMarketDataUnrollingLoopDisabled(
   const auto &updates = SimulatedArrangedDataAlignedArrayInputData.data;
   for (auto _ : state) {
 
-#pragma GCC unroll 0
     for(const auto& update :  updates) {
 
       benchmark::DoNotOptimize(&update.price);
