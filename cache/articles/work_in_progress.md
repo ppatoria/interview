@@ -1990,3 +1990,4 @@ ProcessArrangedDataAlignedVectorMarketData_median        560890 ns       560560 
 ProcessArrangedDataAlignedVectorMarketData_stddev          1693 ns         1700 ns           10
 ProcessArrangedDataAlignedVectorMarketData_cv              0.30 %          0.30 %            10
 ppatoria@ux:~/dev/interview/cache/benchmark/build$ 
+    
