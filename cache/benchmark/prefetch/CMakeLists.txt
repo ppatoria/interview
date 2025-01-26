@@ -27,10 +27,27 @@ find_package(benchmark REQUIRED)
 # Add executables and link libraries
 add_executable(cache_prefetch_benchmark prefetch_benchmark.cpp)
 target_link_libraries(cache_prefetch_benchmark PRIVATE benchmark::benchmark pthread)
-
-# Optional: Add include directories
 target_include_directories(cache_prefetch_benchmark PRIVATE ${benchmark_INCLUDE_DIRS})
 
+add_executable(without_prefetching without_prefetching.cpp)
+target_link_libraries(without_prefetching PRIVATE benchmark::benchmark pthread)
+target_include_directories(without_prefetching PRIVATE ${benchmark_INCLUDE_DIRS})
+
+add_executable(with_prefetching with_prefetching.cpp)
+target_link_libraries(with_prefetching PRIVATE benchmark::benchmark pthread)
+target_include_directories(with_prefetching PRIVATE ${benchmark_INCLUDE_DIRS})
+
+add_executable(with_prefetching_in_batch with_prefetching_in_batch.cpp)
+target_link_libraries(with_prefetching_in_batch PRIVATE benchmark::benchmark pthread)
+target_include_directories(with_prefetching_in_batch PRIVATE ${benchmark_INCLUDE_DIRS})
+
+add_executable(with_prefetching_improved with_prefetching_improved.cpp)
+target_link_libraries(with_prefetching_improved PRIVATE benchmark::benchmark pthread)
+target_include_directories(with_prefetching_improved PRIVATE ${benchmark_INCLUDE_DIRS})
+
+add_executable(with_prefetching_in_batch_improved_copying with_prefetching_in_batch_improved_copying.cpp)
+target_link_libraries(with_prefetching_in_batch_improved_copying PRIVATE benchmark::benchmark pthread)
+target_include_directories(with_prefetching_in_batch_improved_copying PRIVATE ${benchmark_INCLUDE_DIRS})
 # Function to create custom benchmark targets
 function(create_benchmark_target target_name)
     add_custom_target(run_${target_name}

@@ -194,5 +194,4 @@ int main() {
   multiBook.cancelOrder(3);
   multiBook.cancelOrder(6);
 
-  return 0;
-}
+  return 0;}
