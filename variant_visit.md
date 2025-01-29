@@ -144,6 +144,9 @@ Here's a detailed explanation:
                     and typically also stores a small amount of additional data to keep track of which type is currently held.
 - **Type-Safety** : It ensures type-safety by keeping track of the type currently held and only allowing access to that type,
                     preventing undefined behavior associated with type punning in unions.
+                   **Storage:** Similar to a C-style union, std::variant also allocates memory equal to the size of its largest member.
+                   However, it holds additional information about the active type.
+                   **Type Safety:** std::variant provides type-safe access by keeping track of which type is currently active, using an index or type tag.
 - **Visitation**  : Accessing the stored value is done through visitation, where a visitor function or lambda is applied to the contained value.
 
 ### Efficiency:
@@ -215,3 +218,183 @@ try {
 In the `std::variant` example, attempting to access the `int` as a `float` results in an exception,
 thus preventing type punning and ensuring compliance with the strict aliasing rule.
 This makes `std::variant` a safer alternative to unions for type punning.
+
+
+
+# Runtimepolymorphism but dispatch table is created at compile time
+Great observation! The variant/visitor pattern indeed creates a dispatch table at compile time, which is an essential aspect of how it works efficiently. However, it's still considered runtime polymorphism because the actual type stored in the variant is determined at runtime, and the corresponding function to handle that type is invoked based on the runtime type.
+
+Here's a deeper dive into why this is still considered runtime polymorphism:
+
+### Compile-Time and Runtime Aspects
+
+1. **Compile-Time Preparation**:
+   - The dispatch table (mapping of types to functions) is created at compile time using template metaprogramming. This ensures that the appropriate functions for all possible types are generated and available.
+
+2. **Runtime Type Resolution**:
+   - At runtime, the `std::variant` holds a specific type, which is determined dynamically when the program executes.
+   - `std::visit` checks the active type stored in the variant at runtime and uses the pre-generated dispatch table to call the appropriate function.
+
+### Key Points of Runtime Polymorphism:
+
+- **Dynamic Behavior**: The actual type contained in the `std::variant` and the corresponding visitor function that gets called are determined at runtime, hence the behavior can change dynamically based on the actual data.
+- **Type Safety**: Despite the dynamic nature, the type safety is ensured at compile time, preventing invalid type access.
+- **No Virtual Tables or Pointers**: By avoiding inheritance and virtual functions, you eliminate the overhead associated with virtual tables and pointers while still achieving dynamic behavior.
+
+### Why It’s Still Runtime Polymorphism:
+
+- **Flexibility**: The program can handle different types stored in the variant dynamically, which is a hallmark of runtime polymorphism.
+- **Efficiency**: Using a dispatch table created at compile time means the program runs efficiently, but the decision of which function to call is made based on the type stored in the variant at runtime.
+
+### Simple English Analogy:
+
+Think of a `std::variant` as a box that can hold any one of several types of objects. The specific type of object in the box isn't known until you look inside (at runtime). The visitor is like a set of labeled tools designed for each type of object. The `std::visit` function opens the box, sees what's inside, and picks the right tool to handle it based on the labels prepared in advance (at compile time).
+
+This combination allows the flexibility and dynamic nature of runtime polymorphism without the overhead of virtual function calls.
+
+
+
+# Psedo implementation of Variant/Visit :
+### Complete Pseudo Code:
+
+1. **Define Shape Types**:
+    ```
+    struct Circle {
+        double radius;
+    };
+
+    struct Square {
+        double side;
+    };
+
+    struct Triangle {
+        double base;
+        double height;
+    };
+    ```
+
+2. **Define Variant to Hold Shapes**:
+    ```
+    Variant Shape {
+        Circle, Square, Triangle
+    }
+    ```
+
+3. **Define Visitor Struct**:
+    ```
+    struct AreaVisitor {
+        function visit(Circle c) {
+            return 3.14 * c.radius * c.radius;
+        }
+
+        function visit(Square s) {
+            return s.side * s.side;
+        }
+
+        function visit(Triangle t) {
+            return 0.5 * t.base * t.height;
+        }
+    }
+    ```
+
+4. **Union Declaration**:
+    - Define a union that can store any of the shape types.
+    ```
+    union ShapeUnion {
+        Circle circle;
+        Square square;
+        Triangle triangle;
+    }
+    ```
+
+5. **Variant Class**:
+    - Define the variant class that uses the union to store the value and an index to keep track of the active type.
+    ```
+    class Variant {
+        int index;      // Type index (e.g., 0 for Circle, 1 for Square, etc.)
+        ShapeUnion value; // Union to hold different shapes
+
+        function set(Circle c) {
+            value.circle = c;
+            index = 0;
+        }
+
+        function set(Square s) {
+            value.square = s;
+            index = 1;
+        }
+
+        function set(Triangle t) {
+            value.triangle = t;
+            index = 2;
+        }
+
+        function getIndex() {
+            return index;
+        }
+
+        function getValue() {
+            return value;
+        }
+    }
+    ```
+
+6. **Create Dispatch Table**:
+    - At compile-time, create a table that maps the variant type index to the corresponding visitor function.
+    ```
+    DispatchTable = {
+        [0] = AreaVisitor.visit(Circle),    // Maps index 0 to Circle visitor function
+        [1] = AreaVisitor.visit(Square),    // Maps index 1 to Square visitor function
+        [2] = AreaVisitor.visit(Triangle)   // Maps index 2 to Triangle visitor function
+    }
+    ```
+
+7. **Use `std::visit` to Apply Visitor**:
+    - Determine the type at runtime and call the corresponding visitor function from the dispatch table.
+    ```
+    function std_visit(visitor, variant) {
+        index = variant.getIndex();             // Get the active type index
+        value = variant.getValue();             // Get the stored value
+        dispatchFunction = DispatchTable[index]; // Retrieve the visitor function from dispatch table
+        return dispatchFunction(visitor, value); // Call the visitor function with the value
+    }
+    ```
+
+8. **Calculate Area Using Visitor**:
+    - Create instances of shapes and calculate the area using the visitor.
+    ```
+    Shape shape1 = Variant();
+    shape1.set(Circle(10.0));
+
+    Shape shape2 = Variant();
+    shape2.set(Square(5.0));
+
+    Shape shape3 = Variant();
+    shape3.set(Triangle(6.0, 4.0));
+
+    AreaVisitor visitor;
+
+    area1 = std_visit(visitor, shape1);
+    area2 = std_visit(visitor, shape2);
+    area3 = std_visit(visitor, shape3);
+
+    print("Area of Circle: ", area1);
+    print("Area of Square: ", area2);
+    print("Area of Triangle: ", area3);
+    ```
+
+### Explanation of Type Safety:
+
+1. **Union to Store Values**:
+    - The union (`ShapeUnion`) can hold any of the shape types (Circle, Square, Triangle). Only one value can be active at any given time.
+
+2. **Index to Track Type**:
+    - The variant class uses an `index` to keep track of the currently active type in the union. This ensures type safety, as the `index` value indicates which member of the union is currently valid.
+
+3. **Set Functions**:
+    - The `set` functions update the union with a specific shape type and set the corresponding index. This ensures that only the correct type is stored and accessed.
+
+4. **Dispatch Table**:
+    - The dispatch table is created at compile time, mapping each type index to the corresponding visitor function. This table ensures that the correct function is called based on the active type stored in the union.
+
+By following this approach, we achieve efficient runtime polymorphism with type safety, avoiding the overhead of virtual tables and pointers.

@@ -1,3 +1,309 @@
+# Custom Allocators:
+## Interface:
+Creating a custom allocator in C++ involves implementing a specific set of functions as required by the C++ Standard Library.
+These functions form the interface that your custom allocator must adhere to.
+Here's a breakdown of the interface, the responsibilities of each function, and how they should behave.
+
+### Key Interface Functions for a Custom Allocator
+
+1. **`allocate`**
+2. **`deallocate`**
+3. **`construct`**
+4. **`destroy`**
+5. **`rebind`**
+
+### 1. `allocate`
+
+#### **Purpose**:  
+Allocates raw memory for `n` objects of type `T`.
+
+#### **Parameters**:
+- `std::size_t n`: The number of objects (of type `T`) for which memory should be allocated.
+  
+#### **Expected Implementation**:
+- Allocate the raw memory using a system call or memory management mechanism. Typically, this can be done using `::operator new` (for raw memory) or using a custom allocation strategy (e.g., from a memory pool).
+- If the allocation fails, throw a `std::bad_alloc` exception (if memory cannot be allocated).
+  
+#### **Return**:
+- Return a pointer to the allocated raw memory (of type `T*`).
+
+#### **Error/Exception Handling**:
+- **Throw `std::bad_alloc`** if the allocation fails.
+- **Don't catch exceptions** inside the allocator since the standard containers rely on the allocator throwing the exception when allocation fails.
+  
+#### **Multithreading Considerations**:
+- **Thread Safety**: `allocate` should be thread-safe. If you're using a custom memory pool or shared resource, proper synchronization (e.g., mutexes) is necessary to prevent race conditions in multi-threaded environments. If `std::allocator` is used under the hood, it's inherently thread-safe for single allocations but not for pooled allocations.
+
+### 2. `deallocate`
+
+#### **Purpose**:  
+Deallocates raw memory previously allocated by `allocate`.
+
+#### **Parameters**:
+- `T* ptr`: A pointer to the allocated memory block.
+- `std::size_t n`: The number of objects to deallocate.
+
+#### **Expected Implementation**:
+- Free the raw memory using the corresponding `::operator delete` or your custom deallocation strategy.
+  
+#### **Return**:
+- This function returns `void` and does not need to return anything.
+
+#### **Error/Exception Handling**:
+- **No exception** should be thrown in `deallocate` since `std::allocator` is designed to never throw exceptions in deallocation.
+- **Don't attempt to deallocate `nullptr`** (it’s a no-op).
+- If you are managing a pool or custom memory management strategy, ensure that `deallocate` properly handles memory cleanup.
+
+#### **Multithreading Considerations**:
+- **Thread Safety**: Similar to `allocate`, `deallocate` must be thread-safe when managing shared resources like a memory pool.
+
+### 3. `construct`
+
+#### **Purpose**:  
+Constructs an object of type `T` in the allocated memory block.
+
+#### **Parameters**:
+- `T* ptr`: Pointer to the memory block where the object should be constructed.
+- `Args&&... args`: Forwarded arguments for the constructor of `T`.
+
+#### **Expected Implementation**:
+- Call the constructor of `T` using `new (ptr) T(std::forward<Args>(args)...)`. This placement `new` allows you to construct an object in a pre-allocated memory block.
+- **No allocation** is performed here; only the object is constructed at the provided memory location.
+  
+#### **Return**:
+- This function returns `void`.
+
+#### **Error/Exception Handling**:
+- If the construction fails (e.g., if an exception is thrown from the constructor of `T`), it’s acceptable to propagate the exception.
+- **Avoid catching exceptions** within `construct` since it's part of the allocator's responsibility to let the container or user handle construction failure.
+
+#### **Multithreading Considerations**:
+- **Thread Safety**: If multiple threads may access the same memory block concurrently, ensure synchronization when constructing objects.
+
+### 4. `destroy`
+
+#### **Purpose**:  
+Destroys the object at the specified memory location, but does not deallocate the memory.
+
+#### **Parameters**:
+- `T* ptr`: Pointer to the object to destroy.
+
+#### **Expected Implementation**:
+- Call the destructor of `T` using `ptr->~T()`.
+- **Don't deallocate memory** here—just call the destructor and leave the memory intact for later deallocation.
+
+#### **Return**:
+- This function returns `void`.
+
+#### **Error/Exception Handling**:
+- **Avoid exceptions**. The destructor should not throw exceptions because `destroy` doesn't guarantee the success of destructor calls.
+
+#### **Multithreading Considerations**:
+- **Thread Safety**: Destruction should be thread-safe if multiple threads might be accessing the same memory location. Be careful when destroying objects in multithreaded scenarios, especially if destructors involve shared resources.
+
+### 5. `rebind`
+
+#### **Purpose**:  
+Defines a mechanism to allocate memory for a different type than `T`.
+
+#### **Parameters**:
+- `U`: The type for which memory should be allocated (different from `T`).
+
+#### **Expected Implementation**:
+- The `rebind` struct helps the allocator allocate memory for a different type, typically used in containers when the container stores different types of objects in different internal containers.
+- You would define a `rebind` type that points to the allocator for type `U` instead of `T`.
+
+#### **Return**:
+- This is a nested type definition (`struct rebind`), not a function returning a value.
+
+#### **Error/Exception Handling**:
+- **No error handling** is required in `rebind`. It's simply a type alias used to facilitate allocating memory for a different type.
+
+#### **Multithreading Considerations**:
+- **Thread Safety**: `rebind` doesn’t involve memory management or allocation, so no locking or thread safety concerns arise.
+
+---
+## Implementation (Example):
+### Example Custom Allocator Interface
+
+Here’s a basic structure that summarizes the required interface:
+
+```cpp
+template <typename T>
+struct MyAllocator {
+    using value_type = T;
+
+    // 1. Allocate raw memory
+    T* allocate(std::size_t n) {
+        if (n == 0) return nullptr;
+        void* ptr = ::operator new(n * sizeof(T));  // Allocate raw memory
+        if (!ptr) throw std::bad_alloc();  // Throw on allocation failure
+        return static_cast<T*>(ptr);
+    }
+
+    // 2. Deallocate memory
+    void deallocate(T* ptr, std::size_t n) noexcept {
+        if (ptr) {
+            ::operator delete(ptr);  // Deallocate memory
+        }
+    }
+
+    // 3. Construct an object in allocated memory
+    template <typename U, typename... Args>
+    void construct(U* ptr, Args&&... args) {
+        new (ptr) U(std::forward<Args>(args)...);  // Placement new to construct
+    }
+
+    // 4. Destroy an object
+    template <typename U>
+    void destroy(U* ptr) noexcept {
+        ptr->~U();  // Call destructor
+    }
+
+    // 5. Rebind to a different type
+    template <typename U>
+    struct rebind {
+        using other = MyAllocator<U>;
+    };
+};
+```
+Here's a simple `main` function that demonstrates how to use the custom allocator (`MyAllocator`) in practice. This will show how it works with a standard container (like `std::vector`) and manually invoking the allocator to allocate and deallocate memory for objects.
+
+### Example `main` Function:
+
+```cpp
+#include <iostream>
+#include <vector>
+
+template <typename T>
+struct MyAllocator {
+    using value_type = T;
+
+    // 1. Allocate raw memory
+    T* allocate(std::size_t n) {
+        if (n == 0) return nullptr;
+        void* ptr = ::operator new(n * sizeof(T));  // Allocate raw memory
+        if (!ptr) throw std::bad_alloc();  // Throw on allocation failure
+        std::cout << "Allocated " << n * sizeof(T) << " bytes." << std::endl;
+        return static_cast<T*>(ptr);
+    }
+
+    // 2. Deallocate memory
+    void deallocate(T* ptr, std::size_t n) noexcept {
+        if (ptr) {
+            ::operator delete(ptr);  // Deallocate memory
+            std::cout << "Deallocated " << n * sizeof(T) << " bytes." << std::endl;
+        }
+    }
+
+    // 3. Construct an object in allocated memory
+    template <typename U, typename... Args>
+    void construct(U* ptr, Args&&... args) {
+        new (ptr) U(std::forward<Args>(args)...);  // Placement new to construct
+    }
+
+    // 4. Destroy an object
+    template <typename U>
+    void destroy(U* ptr) noexcept {
+        ptr->~U();  // Call destructor
+    }
+
+    // 5. Rebind to a different type
+    template <typename U>
+    struct rebind {
+        using other = MyAllocator<U>;
+    };
+};
+
+int main() {
+    // Using custom allocator with a standard container (std::vector)
+    std::cout << "Using MyAllocator with std::vector" << std::endl;
+    std::vector<int, MyAllocator<int>> vec;
+
+    // Add some elements
+    for (int i = 0; i < 5; ++i) {
+        vec.push_back(i);
+    }
+
+    // Display elements
+    std::cout << "Vector contents: ";
+    for (const auto& val : vec) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+
+    // Manually using MyAllocator to allocate and deallocate memory
+    std::cout << "\nManually allocating and deallocating memory" << std::endl;
+    MyAllocator<int> allocator;
+
+    // Allocate memory for 5 integers
+    int* ptr = allocator.allocate(5);
+
+    // Construct objects in the allocated memory
+    for (int i = 0; i < 5; ++i) {
+        allocator.construct(&ptr[i], i * 10);
+    }
+
+    // Display constructed objects
+    std::cout << "Constructed objects in allocated memory: ";
+    for (int i = 0; i < 5; ++i) {
+        std::cout << ptr[i] << " ";
+    }
+    std::cout << std::endl;
+
+    // Destroy the objects
+    for (int i = 0; i < 5; ++i) {
+        allocator.destroy(&ptr[i]);
+    }
+
+    // Deallocate the memory
+    allocator.deallocate(ptr, 5);
+
+    return 0;
+}
+```
+
+### Explanation:
+
+- **Using `std::vector` with Custom Allocator**:
+  - The `std::vector<int, MyAllocator<int>>` uses the custom allocator to manage its memory. The allocator handles the memory allocation, construction, and deallocation of objects in the vector.
+  - As you add elements to the vector, the `allocate` and `construct` functions are invoked internally, and memory management happens via the custom allocator.
+
+- **Manual Memory Management**:
+  - The `allocator.allocate(5)` allocates memory for 5 `int` objects.
+  - The `allocator.construct(&ptr[i], i * 10)` constructs `int` objects in the allocated memory, initializing them with values `0, 10, 20, 30, 40`.
+  - The `allocator.destroy(&ptr[i])` manually destroys the objects.
+  - Finally, `allocator.deallocate(ptr, 5)` deallocates the raw memory.
+
+### Output Example:
+
+```
+Using MyAllocator with std::vector
+Allocated 20 bytes.
+Allocated 20 bytes.
+Allocated 20 bytes.
+Allocated 20 bytes.
+Allocated 20 bytes.
+Vector contents: 0 1 2 3 4 
+
+Manually allocating and deallocating memory
+Allocated 20 bytes.
+Constructed objects in allocated memory: 0 10 20 30 40 
+Deallocated 20 bytes.
+```
+
+### Key Points:
+- **Memory Allocation and Deallocation**: You can see how the custom allocator is being used to manage memory in both the container (`std::vector`) and manually allocated memory.
+- **Custom Logic**: You can modify the allocator to add custom behavior, such as logging or managing memory in pools, while still conforming to the C++ Standard's required interface.
+
+### Summary of Error and Exception Handling
+- **Allocate/Deallocate**: Always ensure that `allocate` throws `std::bad_alloc` on failure. `deallocate` should never throw exceptions and should safely handle `nullptr`.
+- **Construct/Destroy**: Exception handling should be avoided inside `construct` and `destroy`. Let any exceptions from object construction propagate outwards.
+- **Thread Safety**: Ensure thread safety where appropriate (e.g., using locks for shared memory management or pools).
+
+By adhering to this interface, you can create a custom allocator that fits the requirements of the C++ Standard Library and is suitable for use with containers like `std::vector`, `std::map`, etc.
+
+
 # Allocators
     When it comes to memory allocation and access strategies, the choice between
     a managed pointer allocator and a container allocator depends on the

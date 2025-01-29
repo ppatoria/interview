@@ -715,3 +715,145 @@ However, tag dispatching can lead to more verbose code and doesn't provide the s
     - **Code Size:** Virtual dispatch can potentially result in smaller code size compared to CRTP.
       With CRTP, the compiler generates a separate version of the function for each type that it’s used with, which can increase the code size.
       With virtual dispatch, there’s only one version of the function in the base class.
+
+# When CRTP Cannot Replace Runtime Polymorphism
+
+#### 1. Dynamic Decisions
+
+**Explanation**: If the types or objects involved in polymorphic behavior are determined at runtime, CRTP cannot handle this. Runtime polymorphism is necessary when the exact type to be used isn't known until the program is running.
+
+**Example**:
+- **Runtime Polymorphism**:
+    ```cpp
+    class Shape {
+    public:
+        virtual void draw() const = 0;
+        virtual ~Shape() = default;
+    };
+
+    class Circle : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Circle" << std::endl;
+        }
+    };
+
+    class Square : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Square" << std::endl;
+        }
+    };
+
+    std::unique_ptr<Shape> createShape(const std::string& type) {
+        if (type == "Circle") {
+            return std::make_unique<Circle>();
+        } else if (type == "Square") {
+            return std::make_unique<Square>();
+        }
+        return nullptr;
+    }
+
+    int main() {
+        auto shape = createShape("Circle");
+        if (shape) {
+            shape->draw(); // Calls Circle::draw() at runtime
+        }
+        return 0;
+    }
+    ```
+
+#### 2. Heterogeneous Collections
+
+**Explanation**: CRTP is not suitable for managing collections of different types that share a common interface. For instance, a container that holds objects of various types using a base class pointer requires runtime polymorphism.
+
+**Example**:
+- **Runtime Polymorphism**:
+    ```cpp
+    class Shape {
+    public:
+        virtual void draw() const = 0;
+        virtual ~Shape() = default;
+    };
+
+    class Circle : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Circle" << std::endl;
+        }
+    };
+
+    class Square : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Square" << std::endl;
+        }
+    };
+
+    int main() {
+        std::vector<std::unique_ptr<Shape>> shapes;
+        shapes.push_back(std::make_unique<Circle>());
+        shapes.push_back(std::make_unique<Square>());
+
+        for (const auto& shape : shapes) {
+            shape->draw(); // Calls appropriate draw() method for each shape
+        }
+        return 0;
+    }
+    ```
+
+#### 3. Extensibility
+
+**Explanation**: Runtime polymorphism allows for more extensible code where new derived classes can be added without modifying existing code. CRTP requires all derived types to be known at compile-time, limiting extensibility.
+
+**Example**:
+- **Runtime Polymorphism**:
+    ```cpp
+    class Shape {
+    public:
+        virtual void draw() const = 0;
+        virtual ~Shape() = default;
+    };
+
+    class Circle : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Circle" << std::endl;
+        }
+    };
+
+    class Square : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Square" << std::endl;
+        }
+    };
+
+    // Adding new shape without modifying existing code
+    class Triangle : public Shape {
+    public:
+        void draw() const override {
+            std::cout << "Drawing Triangle" << std::endl;
+        }
+    };
+
+    int main() {
+        std::vector<std::unique_ptr<Shape>> shapes;
+        shapes.push_back(std::make_unique<Circle>());
+        shapes.push_back(std::make_unique<Square>());
+        shapes.push_back(std::make_unique<Triangle>()); // New shape added
+
+        for (const auto& shape : shapes) {
+            shape->draw(); // Calls appropriate draw() method for each shape
+        }
+        return 0;
+    }
+    ```
+
+### Summary
+
+- **Dynamic Decisions**: If the type to be used is determined at runtime, CRTP cannot handle it. Example: Creating shapes based on user input.
+- **Heterogeneous Collections**: CRTP cannot store different derived types in the same container. Example: Storing different shapes in a single vector.
+- **Extensibility**: CRTP limits extensibility as all derived types must be known at compile-time. Example: Adding new shapes without modifying existing code.
+
+These limitations illustrate scenarios where runtime polymorphism is necessary and CRTP cannot be used as a replacement.
