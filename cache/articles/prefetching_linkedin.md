@@ -64,14 +64,14 @@ Batch processing reduces cache misses by fetching and processing multiple items 
 ```cpp
 void processOrdersInBatches(std::list<Order>& orders) {
     auto it = orders.begin();
-    Order orderBatch[4];
+    Order* orderBatch[4];
 
     while (it != orders.end()) {
         size_t batchSize = 0;
 
         for (int i = 0; i < 4 && it != orders.end(); ++i, ++it) {
             __builtin_prefetch(&(*it));
-            orderBatch[batchSize++] = *it;
+            orderBatch[batchSize++] = &(*it);
         }
 
         processOrderBatch(orderBatch, batchSize);

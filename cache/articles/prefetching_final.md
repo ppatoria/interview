@@ -75,7 +75,7 @@ void processOrdersWithPrefetching(std::list<Order>& orders) {
         ```cpp
         auto it = orders.begin();
         if (it != orders.end()) {
-            _mm_prefetch(reinterpret_cast<const char*>(&(*it)), _MM_HINT_T0);
+            __builtin_prefetch(&(*it));
         }
         ```
 
@@ -111,7 +111,7 @@ Let’s fetch and process orders in batches of 4:
 ```cpp
 void processOrdersInBatches(std::list<Order>& orders) {
     auto it = orders.begin();
-    Order orderBatch[4];
+    Order* orderBatch[4];
 
     while (it != orders.end()) {
         size_t batchSize = 0;
@@ -119,7 +119,7 @@ void processOrdersInBatches(std::list<Order>& orders) {
         // Prefetch the next 4 orders and collect them in a batch
         for (int i = 0; i < 4 && it != orders.end(); ++i, ++it) {
             __builtin_prefetch(&(*it));
-            orderBatch[batchSize++] = *it;
+            orderBatch[batchSize++] = &(*it);
         }
 
         // Process the batch of prefetched orders
@@ -141,7 +141,7 @@ void processOrdersInBatches(std::list<Order>& orders) {
 
       ```cpp
       auto it = orders.begin();
-      Order orderBatch[4];
+      Order* orderBatch[4];
       ```
 
       2. **Prefetch and Process in Batches**:
@@ -155,7 +155,7 @@ void processOrdersInBatches(std::list<Order>& orders) {
     // Prefetch the next 4 orders and collect them in a batch
     for (int i = 0; i < 4 && it != orders.end(); ++i, ++it) {
         __builtin_prefetch(&(*it));
-        orderBatch[batchSize++] = *it;
+        orderBatch[batchSize++] = &(*it);
     }
 
           // Process the batch of prefetched orders
