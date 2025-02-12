@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>average_price.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<h1 id="question-average-prices">Question: Average Prices</h1>
+<ul>
+<li><p><strong>SCENARIO</strong> The four space-separated message formats below describe the placement, modifying, and trading (i.e. “fill”ing) of orders at a securities exchange throughout the day: new <order-id> <security> <buy sell> <quantity> <price> modify <order-id-from-new> <order-id> <quantity> <price> modify <order-id-from-earlier- modify> <order-id> <quantity> <price> fill <order-id> <quantity> <price></p></li>
+<li><p><strong>Terminology:</strong></p>
+<ul>
+<li>A chain (of orders) refers to a “new” order message, followed by 0 or more “modify”s, each referencing the previous message in the chain by order id. (Example below.)</li>
+<li>The volume-weighted average price (“vwap”) of one or more fill messages is the total money exchanged divided by the total number of shares exchanged. For example, fills for 5 shares at 100.00, 10 shares at 130.00, and 5 shares at 150.00, would have vwap of (5<em>100.00 + 10</em>130.00 + 5*150.00) / (5 +10+5)=(500.00 + 1300.00 + 750.00) / 20 = 2550.00/20 = 127.50. Due to race conditions at the exchange, a “fill” message’s order-id can be from any “new” or “modify” message previously seen in the input messages.</li>
+</ul></li>
+<li><p><strong>TASK</strong></p>
+<ul>
+<li>Provide efficient (in terms of big-O efficiency of operations on containers) and clean implementation for the function…</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>vector&lt;string&gt; average_prices (<span class="at">const</span> vector&lt;string&gt;&amp; messages);</span></code></pre></div>
+<p>… which is passed a sequence of exchange messages - as described above - and must return a vector containing strings with the format… <order-id> <total-fill-quanity> <vwap> …where:</p>
+<ul>
+<li><order-id>s are those seen in “new” messages, and appear in the returned vector<string> in the same order as in the “new” messages in the input</li>
+<li><total-fill-quantity> is the sum of the <quantity>s in “fill” messages for that chain of orders (or 0 if there are no fills)</li>
+<li><vwap> is the volume weighted average price (see example below) for the “fill”s on that chain of orders rounded down (or 0.00 if there are no fills).</li>
+</ul></li>
+<li><p><strong>EXAMPLE</strong> If you glance over the following messages (you don’t need to consider all the naunces)…</p>
+<ul>
+<li><p>new 1 IBM buy 20 1250.00 order-id 1: someone wants to buy 20 shares of IBM for &lt;= $1250.00</p></li>
+<li><p>modify 1 2 15 1240.00 they decided 15 shares is enough, and only want to pay &lt;= $1240.00 new 3 IBM buy 40 1245.00</p></li>
+<li><p>fill 2 5 1240.00 the original trader bought 5 shares for $1240.00 each</p></li>
+<li><p>modify 2 4 15 1250.00</p></li>
+<li><p>modify 4 5 15 1240.00 The original trader wants to put the price back down now there’s no competition to buy</p></li>
+<li><p>fill 4 5 1250.00 but before that took effect they’d already bought 5 at the higher price of $1250.00</p></li>
+<li><p>modify 5 6 20 1240.00</p></li>
+<li><p>new 3 IBM buy 40 1245 order-id 3: distinct order to buy 40 shares of IBM for &lt;= $1245.00</p></li>
+<li><p>fill 3 40 1243.00 order 3 above got all 40 shares for $1243.00 each</p></li>
+<li><p>new 101 MSFT sell 40 100.00</p></li>
+</ul>
+<p>…there is a chain that includes order- ids 1, 2, 4, 5 and 6. order-id 3 is in a distinct chain by itself, as is order-id 101. The three fills are all for orders in the chain started by the “new” message with order-id 1, so that chain’s vwap should be (5* 1240.00 + 40 * 1243.00 +5*1250.00) / (5 +40 +5)= 1243.40. The other chains don’t have any fills. The returned vector should contain the three strings (without double-quotes), sorted as follows: “1 50 1243.40” “3 0 0.00” “101 0 0.00”</p></li>
+<li><p><strong>NOTES</strong></p>
+<ul>
+<li>There will be 1 to 1,000,000 lines of input, for 1 to 1,000,000 distinct order ids, each of which is an integer between 0 and 1 billion (i.e. 1E9) inclusive.</li>
+<li>All messages, fields and values will be valid / no validation is required or wanted.</li>
+<li>Prices in dollars and cents, e.g. 1239.29.</li>
+<li>No special effort need be made to avoid normal floating point errors, but do use double rather than floats</li>
+<li><quantity>s and <total-fill-quantity>s are integers between 1 and 1,000,000 (1E6) inclusive.</li>
+<li><price>s will be between 0.01 and 9999.99 inclusive.</li>
+<li>Security names consist of 1 or more of the letters ‘A’ through ‘Z’.</li>
+</ul></li>
+</ul>
+<p>(1240 * 5) + (5 * 1250) + (40 * 1243) = 6200 + 6250 + 49720 = 62170 / 50 = 1243.40 6200, 5</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;bits/stdc++.h&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>* Complete the <span class="ch">&#39;a</span><span class="er">verage_prices</span><span class="ch">&#39;</span> function below.</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>*</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>* The function is expected to <span class="cf">return</span> a STRING_ARRAY.</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>*The function accepts STRING_ARRAY messages as parameter.</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>*/</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>vector&lt;string&gt; average_prices (<span class="at">const</span> vector&lt;string&gt;&amp; messages) {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>}</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a><span class="dt">int</span> main()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>{</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>    ofstream fout(getenv(<span class="st">&quot;OUTPUT_PATH&quot;</span>));</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>    vector&lt;string&gt; messages;</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>    string line;</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>    <span class="cf">while</span> (<span class="bu">std::</span>getline(<span class="bu">std::</span>cin, line))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>    <span class="cf">if</span> (!line.empty()) messages.push_back(line);</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>    vector&lt;string&gt; result = average_prices (messages);</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="at">const</span> <span class="kw">auto</span>&amp; chain_vwap: result)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>        fout &lt;&lt; chain_vwap &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>}</span></code></pre></div>
+
+</body>
+</html>
