@@ -1,3 +1,85 @@
+# iterator design pattern
+```c++
+#include <iostream>
+
+// Step 1: Custom Container (STL-like) Using C-Style Array
+template <typename T, size_t Size>
+class CustomArray {
+private:
+    T data[Size];  // Fixed-size array
+    size_t count;  // Tracks number of elements added
+
+public:
+    CustomArray() : count(0) {}
+
+    void add(const T& value) {
+        if (count < Size) {
+            data[count++] = value;
+        } else {
+            std::cerr << "Container is full!" << std::endl;
+        }
+    }
+
+    size_t size() const {
+        return count;
+    }
+
+    T& operator[](size_t index) {
+        return data[index];
+    }
+
+    const T& operator[](size_t index) const {
+        return data[index];
+    }
+
+    // Forward declaration of iterator
+    class Iterator;
+
+    // STL-like begin() and end() functions
+    Iterator begin() { return Iterator(*this, 0); }
+    Iterator end() { return Iterator(*this, count); }
+
+    // Step 2: Custom Iterator Class Inside Container
+    class Iterator {
+    private:
+        CustomArray& container;
+        size_t index;
+
+    public:
+        Iterator(CustomArray& c, size_t idx) : container(c), index(idx) {}
+
+        bool operator!=(const Iterator& other) const {
+            return index != other.index;
+        }
+
+        T& operator*() {
+            return container.data[index];
+        }
+
+        Iterator& operator++() {
+            ++index;
+            return *this;
+        }
+    };
+};
+
+// Step 3: Client Code
+int main() {
+    CustomArray<int, 5> myArray;
+
+    myArray.add(10);
+    myArray.add(20);
+    myArray.add(30);
+
+    std::cout << "Iterating over CustomArray: ";
+    for (auto it = myArray.begin(); it != myArray.end(); ++it) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
 # iterator invalidation:
 Iterator invalidation is a common issue in the C++ standard library.
 It occurs when an iterator no longer points to a valid element in a container, or when the state of the container changes in a way that makes the iterator invalid.
