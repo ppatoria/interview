@@ -1,3 +1,121 @@
+High-Frequency Trading (HFT) firms and investment banks in India ask **advanced C++ interview coding questions** that focus on **low-latency systems, memory management, concurrency, and system design**. Below is a categorized list of **advanced C++ coding questions** commonly asked in such interviews:
+
+---
+
+## **1️⃣ Low-Latency & Performance Optimization**
+🔹 **Cache Optimization & False Sharing**
+- Implement a **lock-free** data structure optimized for **cache locality**.
+- Write a **memory-efficient** LRU cache using **custom memory allocators**.
+
+🔹 **SIMD & Compiler Optimizations**
+- Optimize a **matrix multiplication algorithm** using **SIMD (AVX, SSE)**.
+- Implement a **fast string comparison** using **intrinsics**.
+
+🔹 **Branch Prediction & Pipelining**
+- Given an array of **sorted and unsorted integers**, implement an **optimal searching strategy** that minimizes **branch mispredictions**.
+
+---
+
+## **2️⃣ Multi-Threading & Concurrency**
+🔹 **Lock-Free Data Structures**
+- Implement a **lock-free queue** using **CAS (Compare-And-Swap)**.
+- Design a **wait-free stack**.
+
+🔹 **Thread Synchronization & Deadlocks**
+- Implement a **high-performance reader-writer lock**.
+- Given multiple threads writing to a shared buffer, design an efficient **lock-free ring buffer**.
+
+🔹 **False Sharing & NUMA Optimization**
+- Optimize a multi-threaded **order matching engine** by **minimizing false sharing**.
+- Implement a **NUMA-aware memory allocation** strategy.
+
+---
+
+## **3️⃣ Trading System Design**
+🔹 **Order Matching Engine**
+- Implement a **limit order book** with **O(log N) matching**.
+- Design an order book that supports **GTT, Stop-Loss, and Iceberg orders**.
+
+🔹 **Market Data Processing**
+- Implement a **rate-limited FIX protocol parser**.
+- Parse and aggregate **market depth data** for a high-speed trading system.
+
+🔹 **Latency Measurement & Profiling**
+- Implement a high-resolution **timestamping system** to measure function latencies at **nanosecond precision**.
+
+---
+
+## **4️⃣ Custom Memory Management**
+🔹 **Custom Allocators**
+- Implement a **pool allocator** that **avoids fragmentation**.
+- Design an **arena allocator** for high-frequency memory allocations.
+
+🔹 **Smart Pointers & RAII**
+- Implement a **custom smart pointer** with **intrusive reference counting**.
+- Optimize memory access for a **trading data cache**.
+
+---
+
+## **5️⃣ Advanced C++ Features**
+🔹 **Templates & SFINAE**
+- Implement a **type-trait utility** to detect if a function is **noexcept**.
+- Use **concepts** to enforce constraints on a template-based order book.
+
+🔹 **Compile-Time Computation**
+- Implement a **constexpr hash function** for compile-time string hashing.
+- Use `std::index_sequence` to **unroll a loop at compile time**.
+
+🔹 **Metaprogramming**
+- Implement a **variadic template-based** dispatcher for market events.
+- Write a compile-time **state machine** for order execution.
+
+---
+
+## **6️⃣ Networking & Distributed Systems**
+🔹 **Zero-Copy Techniques**
+- Implement a **zero-copy** shared memory IPC mechanism.
+- Optimize **TCP packet parsing** using **scatter-gather I/O**.
+
+🔹 **High-Performance Networking**
+- Implement a **UDP multicast receiver** for real-time market data.
+- Design a **low-latency pub-sub system**.
+
+---
+
+## **7️⃣ Debugging & Profiling**
+🔹 **Cache Miss Profiling**
+- Given a program with frequent **cache misses**, optimize the memory layout.
+- Profile the impact of **TLB misses** using `perf`.
+
+🔹 **Lock Contention Profiling**
+- Find and fix **lock contention issues** in a multi-threaded trading engine.
+
+🔹 **GDB & LLDB Debugging Challenges**
+- Debug a **race condition** using `rr` (Record & Replay Debugging).
+- Use `gdb` to **trace memory corruption** in a large codebase.
+
+---
+
+## **8️⃣ Real-World HFT Scenarios**
+🔹 **Latency Sensitivity**
+- Optimize an order placement strategy to reduce **end-to-end latency**.
+- Measure the **deterministic latency** of a system using **rdtsc**.
+
+🔹 **Arbitrage Strategy Simulation**
+- Implement a **multi-exchange arbitrage detector**.
+
+🔹 **Market Data Snapshot Recovery**
+- Reconstruct an **order book snapshot** from **incremental updates**.
+
+---
+
+## **📌 Final Thoughts**
+- HFT **prioritizes low latency, memory efficiency, and concurrency**.
+- Be **fluent in profiling tools** (`perf`, `VTune`, `gdb`).
+- Expect **coding + system design** questions in **real-time trading scenarios**.
+
+
+
 # Advanced
 ### 1. **Implement a custom memory allocator**  
    - **Question:** Implement a custom memory allocator (i.e., a simple version of `new`/`delete`) and manage dynamic memory allocation in C++ using `malloc`/`free` or `std::allocator`. Handle scenarios like fragmentation.
