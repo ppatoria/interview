@@ -1,0 +1,4 @@
+/home/ppatoria/dev/interview/lru/build/CMakeFiles/lru_dq.dir
+/home/ppatoria/dev/interview/lru/build/CMakeFiles/lru_linked_list.dir
+/home/ppatoria/dev/interview/lru/build/CMakeFiles/edit_cache.dir
+/home/ppatoria/dev/interview/lru/build/CMakeFiles/rebuild_cache.dir

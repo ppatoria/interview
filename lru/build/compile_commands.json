@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/ppatoria/dev/interview/lru/build",
+  "command": "/bin/clang++-15 -O0 -g -funroll-loops -std=gnu++20 -o CMakeFiles/lru_dq.dir/lru_dq.cpp.o -c /home/ppatoria/dev/interview/lru/lru_dq.cpp",
+  "file": "/home/ppatoria/dev/interview/lru/lru_dq.cpp"
+},
+{
+  "directory": "/home/ppatoria/dev/interview/lru/build",
+  "command": "/bin/clang++-15 -O0 -g -funroll-loops -std=gnu++20 -o CMakeFiles/lru_linked_list.dir/lru_linked_list.cpp.o -c /home/ppatoria/dev/interview/lru/lru_linked_list.cpp",
+  "file": "/home/ppatoria/dev/interview/lru/lru_linked_list.cpp"
+}
+]
